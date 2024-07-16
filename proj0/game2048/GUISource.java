@@ -64,7 +64,7 @@ class GUISource implements InputSource {
         }
         return command;
     }
-
+org.junit.
     @Override
      /** Return a randomly positioned tile with either value of 2 with 
       * probability _probOf2 or a value of 4 with probability 1 - _probOf2 in a
