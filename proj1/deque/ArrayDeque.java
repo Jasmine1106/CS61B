@@ -55,6 +55,9 @@ public class ArrayDeque<type> {
 
     // Removes and returns the item at the front of the deque. If no such item exists, returns null.
     public type removeFirst() {
+        if (isEmpty()) {
+            return null;
+        }
         type return_value = items[len - back_index];
         items[len - back_index] = null;
         back_index -= 1;
@@ -64,8 +67,11 @@ public class ArrayDeque<type> {
 
     // Removes and returns the item at the back of the deque. If no such item exists, returns null.
     public type removeLast() {
+        if (isEmpty()) {
+            return null;
+        }
         type return_value = items[size - 1];
-        items[size] = null;
+        items[size - 1] = null;
         size -= 1;
         return return_value;
     }
@@ -74,6 +80,13 @@ public class ArrayDeque<type> {
     // get the index'th item
     public type get(int index) {
         return items[index];
+    }
+
+    // print
+    public void printDeque() {
+        for (int i = 0; i < size; i += 1) {
+            System.out.print(get(i));
+        } System.out.println();
     }
 
     // save memory when it was wasted
