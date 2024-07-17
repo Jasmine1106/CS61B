@@ -2,7 +2,6 @@ package deque;
 
 public class LinkedListDeque<type> {
     private IntNode sentinel;
-    private IntNode last;
     private int size;
 
     // nested IntNode class
@@ -23,6 +22,7 @@ public class LinkedListDeque<type> {
         sentinel =  new IntNode(null, null, null);
         sentinel.next = sentinel;
         sentinel.prev = sentinel;
+        size = 0;
     }
 
 
@@ -30,7 +30,7 @@ public class LinkedListDeque<type> {
     public LinkedListDeque(type a) {
         sentinel =  new IntNode(null, null, null);
         sentinel.next = new IntNode(sentinel, a, sentinel);
-        size = size + 1;
+        size = 1;
     }
 
     // return the number of items in the LinkedListDeque
@@ -42,7 +42,7 @@ public class LinkedListDeque<type> {
 
     // Returns true if deque is empty, false otherwise.
     public boolean isEmpty() {
-        if (sentinel.next == sentinel.prev) {
+        if (size == 0) {
             return true;
         } return false;
     }
@@ -50,12 +50,14 @@ public class LinkedListDeque<type> {
     // add a new item to the front
     public void addFirst(type a) {
         sentinel.next = new IntNode(sentinel, a, sentinel.next);
+        sentinel.next.next.prev = sentinel.next;
         size = size + 1;
     }
 
     // add a new item to the last
     public void addLast(type a) {
         sentinel.prev = new IntNode(sentinel.prev, a, sentinel);
+        sentinel.prev.prev.next = sentinel.prev;   // to make old item point to new created item.
         size = size + 1;
     }
 
@@ -66,6 +68,7 @@ public class LinkedListDeque<type> {
             return null;
         } type return_value = sentinel.next.item;
         sentinel.next = sentinel.next.next;    // Remove
+        sentinel.next.prev = sentinel;
         size = size - 1;
         return return_value;
     }
@@ -77,6 +80,7 @@ public class LinkedListDeque<type> {
             return null;
         } type return_value = sentinel.prev.item;
         sentinel.prev = sentinel.prev.prev;    // Remove
+        sentinel.prev.next = sentinel;
         size = size - 1;
         return return_value;
     }
