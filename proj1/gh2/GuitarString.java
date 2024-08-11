@@ -1,8 +1,8 @@
 package gh2;
 
-// TODO: uncomment the following import once you're ready to start this portion
-// import deque.Deque;
-// TODO: maybe more imports
+
+import deque.Deque;
+import edu.princeton.cs.algs4.StdAudio;
 
 //Note: This file will not compile until you complete the Deque implementations
 public class GuitarString {
@@ -13,8 +13,7 @@ public class GuitarString {
     private static final double DECAY = .996; // energy decay factor
 
     /* Buffer for storing sound data. */
-    // TODO: uncomment the following line once you're ready to start this portion
-    // private Deque<Double> buffer;
+    private Deque<Double> buffer;
 
     /* Create a guitar string of the given frequency.  */
     public GuitarString(double frequency) {
@@ -22,6 +21,8 @@ public class GuitarString {
         //       cast the result of this division operation into an int. For
         //       better accuracy, use the Math.round() function before casting.
         //       Your should initially fill your buffer array with zeros.
+        int  capacity = (int) Math.round(SR / frequency);
+
     }
 
 
@@ -29,7 +30,8 @@ public class GuitarString {
     public void pluck() {
         // TODO: Dequeue everything in buffer, and replace with random numbers
         //       between -0.5 and 0.5. You can get such a number by using:
-        //       double r = Math.random() - 0.5;
+        while (this.size() < capacity )
+               double r = Math.random() - 0.5;
         //
         //       Make sure that your random numbers are different from each
         //       other. This does not mean that you need to check that the numbers
@@ -44,6 +46,7 @@ public class GuitarString {
         // TODO: Dequeue the front sample and enqueue a new sample that is
         //       the average of the two multiplied by the DECAY factor.
         //       **Do not call StdAudio.play().**
+        StdAudio.play();
     }
 
     /* Return the double at the front of the buffer. */

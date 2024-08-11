@@ -1,2 +1,4 @@
-package deque;public class MaxArrayDequeTest {
+package deque;
+
+public class MaxArrayDequeTest {
 }
