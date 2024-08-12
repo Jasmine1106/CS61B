@@ -40,6 +40,7 @@ public class ArrayDequeTest {
     public void addRemoveTest() {
 
         ArrayDeque<Integer> ad1 = new ArrayDeque<>();
+
         // should be empty
         assertTrue("ad1 should be empty upon initialization", ad1.isEmpty());
 

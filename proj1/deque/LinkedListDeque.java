@@ -13,6 +13,7 @@ public class LinkedListDeque<type> implements Deque<type>, Iterable<type>{
         private IntNode<type> next;          //Doubly Linked List
         // creat a new IntNode
         IntNode(IntNode<type> p, type i, IntNode<type> n) {
+
             prev = p;
             item = i;
             next = n;
