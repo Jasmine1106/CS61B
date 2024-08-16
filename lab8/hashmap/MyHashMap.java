@@ -28,8 +28,8 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
 
     /* Instance Variables */
     private Collection<Node>[] buckets;
-    static final int DEFAULT_INITAL_SIZE = 1 << 4;   // aka 16
-    static final double DEFAULT_LOAD_FACTOR= 0.75f;
+    private static final int DEFAULT_INITAL_SIZE = 1 << 4;   // aka 16
+    private static final double DEFAULT_LOAD_FACTOR= 0.75f;
     // You should probably define some more!
     private int num;          // numbers of key-value pairs
     private int ini_size;
@@ -109,12 +109,12 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     // TODO: Implement the methods of the Map61B Interface below
     // Your code won't compile until you do so!
 
-    public int hash(K key) {
+    private int hash(K key) {
         return hash(key, buckets);
     }
 
     // a helper method for convenience of resize method
-    public int hash(K key, Collection<Node>[] table) {
+    private int hash(K key, Collection<Node>[] table) {
         int h = key.hashCode();
         return Math.floorMod(h, table.length);
     }
