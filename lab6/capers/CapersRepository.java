@@ -33,12 +33,8 @@ public class CapersRepository {
      */
     public static void setupPersistence() throws IOException {
         // TODO
-        if (!CAPERS_FOLDER.exists()) {
             CAPERS_FOLDER.mkdir();
-        }
-        if (!Dog.DOG_FOLDER.exists()) {
             Dog.DOG_FOLDER.mkdir();
-        }
     }
 
     /**
@@ -48,7 +44,7 @@ public class CapersRepository {
      */
     public static void writeStory(String text) {
         // TODO
-        File story = join("capers", "story");
+        File story = join(CAPERS_FOLDER, "story");
         String newContent;
         if (!story.exists()) {
             newContent = text;
