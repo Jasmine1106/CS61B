@@ -1,6 +1,8 @@
 package deque;
 
-public class ArrayDeque<type> {
+import java.util.Iterator;
+
+public class ArrayDeque<type> implements Deque<type>, Iterable<type> {
     private type[] items = (type[]) new Object[8];
     private int size;
     private int nextFirst;
@@ -48,13 +50,6 @@ public class ArrayDeque<type> {
         if ( nextLast == items.length) {
             resize(size * 2);
         }
-    }
-
-    // Returns true if deque is empty, false otherwise.
-    public boolean isEmpty() {
-        if (size <= 0) {
-            return true;
-        } return false;
     }
 
     public int size() {
@@ -115,6 +110,34 @@ public class ArrayDeque<type> {
         } System.out.println();
     }
 
+    /* The Deque objects we’ll make are iterable (i.e. Iterable<T>)
+so we must provide this method to return an iterator.  **/
+    private class LinkedListDequeIterator implements Iterator<type> {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
 
+        @Override
+        public type next() {
+            return null;
+        }
+
+
+
+    }
+    public Iterator<type> iterator() {
+
+
+    }
+
+    /*  Returns whether or not the parameter o is equal to the Deque.
+    o is considered equal if it is a Deque and if it contains the same contents
+     (as goverened by the generic T’s equals method) in the same order.
+    (You’ll need to use the instance of keywords)
+     */
+    public boolean equals(Object o) {
+
+    }
 
 }

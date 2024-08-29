@@ -28,8 +28,10 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
 
     /* Instance Variables */
     private Collection<Node>[] buckets;
+
     static final int DEFAULT_INITAL_SIZE = 1 << 4;   // aka 16
     static final double DEFAULT_LOAD_FACTOR= 0.75f;
+
     // You should probably define some more!
     private int num;          // numbers of key-value pairs
     private int ini_size;

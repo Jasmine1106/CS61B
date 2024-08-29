@@ -76,3 +76,4 @@ class hashmap.MyHashMapLLBuckets: 8.16 sec
 class hashmap.MyHashMapTSBuckets: 14.11 sec
 class hashmap.MyHashMapHSBuckets: 17.74 sec
 class hashmap.MyHashMapPQBuckets: 14.01 sec
+

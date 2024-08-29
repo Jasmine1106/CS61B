@@ -1,16 +1,19 @@
 package deque;
 
-public class LinkedListDeque<type> {
-    private IntNode sentinel;
+import java.util.Iterator;
+
+public class LinkedListDeque<type> implements Deque<type>, Iterable<type>{
+    private IntNode<type> sentinel = new IntNode<>(null, null, null);;
     private int size;
 
     // nested IntNode class
-    public class IntNode {
-        public IntNode prev;
-        public type item;
-        public IntNode next;          //Doubly Linked List
+    private static class IntNode<type> {
+        private IntNode<type> prev;
+        private type item;
+        private IntNode<type> next;          //Doubly Linked List
         // creat a new IntNode
-        public IntNode(IntNode p, type i, IntNode n) {
+        IntNode(IntNode<type> p, type i, IntNode<type> n) {
+
             prev = p;
             item = i;
             next = n;
@@ -19,17 +22,14 @@ public class LinkedListDeque<type> {
 
     // Creates an empty linked list deque.
     public LinkedListDeque() {
-        sentinel =  new IntNode(null, null, null);
         sentinel.next = sentinel;
         sentinel.prev = sentinel;
         size = 0;
     }
 
-
     // create a new linkedlist
     public LinkedListDeque(type a) {
-        sentinel =  new IntNode(null, null, null);
-        sentinel.next = new IntNode(sentinel, a, sentinel);
+        sentinel.next = new IntNode<>(sentinel, a, sentinel);
         size = 1;
     }
 
@@ -40,23 +40,17 @@ public class LinkedListDeque<type> {
         } return size;
     }
 
-    // Returns true if deque is empty, false otherwise.
-    public boolean isEmpty() {
-        if (size == 0) {
-            return true;
-        } return false;
-    }
 
     // add a new item to the front
     public void addFirst(type a) {
-        sentinel.next = new IntNode(sentinel, a, sentinel.next);
+        sentinel.next = new IntNode<>(sentinel, a, sentinel.next);
         sentinel.next.next.prev = sentinel.next;
         size = size + 1;
     }
 
     // add a new item to the last
     public void addLast(type a) {
-        sentinel.prev = new IntNode(sentinel.prev, a, sentinel);
+        sentinel.prev = new IntNode<>(sentinel.prev, a, sentinel);
         sentinel.prev.prev.next = sentinel.prev;   // to make old item point to new created item.
         size = size + 1;
     }
@@ -66,7 +60,8 @@ public class LinkedListDeque<type> {
     public type removeFirst() {
         if (isEmpty()) {
             return null;
-        } type return_value = sentinel.next.item;
+        }
+        type return_value = sentinel.next.item;
         sentinel.next = sentinel.next.next;    // Remove
         sentinel.next.prev = sentinel;
         size = size - 1;
@@ -88,7 +83,7 @@ public class LinkedListDeque<type> {
     // Gets the item at the given index, where 0 is the front, 1 is the next item, and so forth.
     // If no such item exists, returns null. Must not alter the deque!
     public type get(int index) {
-        IntNode i = sentinel.next;
+        IntNode<type> i = sentinel.next;
         while (index != 0) {
             if (i.next == null) {
                 return null;
@@ -99,7 +94,7 @@ public class LinkedListDeque<type> {
     }
 
     // a helper method for the following recursive method.
-    public type getRecursive(IntNode p, int index) {
+    public type getRecursive(IntNode<type> p, int index) {
         if (p.next == null) {
             return null;
         } if (index == 0) {
@@ -118,6 +113,22 @@ public class LinkedListDeque<type> {
             System.out.print(get(i));
         } System.out.println();
     }
+
+    /* The Deque objects we’ll make are iterable (i.e. Iterable<T>)
+    so we must provide this method to return an iterator.  **/
+    public Iterator<type> iterator() {
+
+    }
+
+    /*  Returns whether or not the parameter o is equal to the Deque.
+    o is considered equal if it is a Deque and if it contains the same contents
+     (as goverened by the generic T’s equals method) in the same order.
+    (You’ll need to use the instance of keywords)
+     */
+    public boolean equals(Object o) {
+
+    }
+
 
 
 }
