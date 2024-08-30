@@ -57,25 +57,34 @@ public class Main {
         switch(firstArg) {
             case "init":
                 // TODO: handle the `init` command
+                validateNumArgs(firstArg, args, 1);
+                Repository.setupPersistence();
                 break;
             case "add":
                 // TODO: handle the `add [filename]` command
+                validateNumArgs(firstArg, args, 2);
                 break;
             case "commit":
                 // TODO: handle the `commit [message]` command
+                validateNumArgs(firstArg, args, 2);
                 break;
             case "rm":
                 // TODO: handle the `rm [file name]` command
+                validateNumArgs(firstArg, args, 2);
                 break;
             case "log":
                 // TODO: handle the `log` command
+                validateNumArgs(firstArg, args, 1);
                 break;
             case "status":
                 // TODO: handle the `status` command
+                validateNumArgs(firstArg, args, 1);
             case "checkout":
                 // TODO: handle the `checkout` command
+                validateNumArgs(firstArg, args, 1);
             case "branch":
                 // TODO: handle the `branch` command
+                validateNumArgs(firstArg, args, 1);
             // TODO: FILL THE REST IN
             default:
                 System.out.println("No command with that name exists");
@@ -88,4 +97,6 @@ public class Main {
             throw new RuntimeException(
                     String.format("Invalid number of arguments for: %s.", cmd));
         }
+    }
+
 }
