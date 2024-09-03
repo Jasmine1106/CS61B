@@ -1,10 +1,12 @@
 package gitlet;
 
 // TODO: any imports you need here
+import java.io.File;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import static gitlet.Utils.*;
+import static gitlet.Utils.sha1;
 
 import java.util.Date;
 
@@ -19,7 +21,7 @@ import java.util.Date;
  *  3.Each commit is identified by its SHA-1 id, which must include the file (blob) references of its files,
  *   parent reference, log message, and commit time.
  */
-public class Commit {
+public class Commit implements Serializable {
     /**
      * TODO: add instance variables here.
      *
@@ -32,12 +34,52 @@ public class Commit {
     private String message;
     /** use java.time and java.time.DatetimeFormatter class rather than spec recommending.
      * The timestamps  */
-    private LocalDateTime now = LocalDateTime.now();
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z").withZone(ZoneId.systemDefault());
-    private String formatedDateTime = now.format(formatter);
+    private String timestamp = makeTimestamp();
     /** the sha1 code of this commit*/
-    Utils.
+    String uid = sha1();
+    /** the parent commit*/
+    String parent;
 
 
     /* TODO: fill in the rest of this class. */
+
+    /** creat a commit object */
+    public Commit(String message, String parent) {
+        this.message = message;
+        this.parent = parent;
+        if (parent == null) {
+            this.timestamp = "00:00:00 UTC, Thursday, 1 January 1970";
+        }
+    }
+
+    // make a timestamp
+    private String makeTimestamp() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z").withZone(ZoneId.systemDefault());
+        String timestamp = now.format(formatter);
+        return timestamp;
+    }
+
+    // clean the staging area
+    public void clean_staging() {
+
+    }
+
+    // if staging area havn't ant files to commit, return false.
+    private boolean checkCanCommit(File staging_area) {
+        if (staging_area.listFiles().length == 0) {
+            return false;
+        }
+        return true;
+    }
+
+    // search wheter file in staging file is already in CWD,if so, update it and delete the old version; if not, creat that file
+    private void update_file(){
+        boolean ifExist = Add.searchfile(CWD, )
+    }
+
+
+    public void commit(String message) {
+
+    }
 }

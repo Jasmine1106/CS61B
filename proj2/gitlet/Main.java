@@ -1,5 +1,7 @@
 package gitlet;
 
+import java.io.IOException;
+
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author Jasmine1106
  */
@@ -48,7 +50,7 @@ public class Main {
      * a name for a reference (a SHA-1 identifier) to a commit node. This command does NOT immediately switch to the newly created
      * branch (just as in real Git). Before you ever call branch, your code should be running with a default branch called “master”.
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // TODO: what if args is empty?
         if (args == null) {
             System.out.println("Please enter a command.");
@@ -58,11 +60,12 @@ public class Main {
             case "init":
                 // TODO: handle the `init` command
                 validateNumArgs(firstArg, args, 1);
-                Repository.setupPersistence();
+                Repository.init();
                 break;
             case "add":
                 // TODO: handle the `add [filename]` command
                 validateNumArgs(firstArg, args, 2);
+                Add.add(args[1]);
                 break;
             case "commit":
                 // TODO: handle the `commit [message]` command

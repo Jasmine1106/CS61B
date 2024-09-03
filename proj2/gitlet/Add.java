@@ -17,37 +17,41 @@ import java.nio.file.StandardCopyOption;
  *  and remove it from the staging area if it is already there.
  */
 public class Add {
-    File CWD = Repository.CWD;
-    File staging_area = Repository.Staging_area;
+    static File CWD = Repository.CWD;
+    static File staging_area = Repository.Staging_area;
 
-    public void addFile(String file_name) throws IOException {
-        ValidCheck(file_name);
-        copy_file(file_name);
-    }
 
     // check that if adding file exists
-    public void ValidCheck(String file_name) {
+    public static void ValidCheck(String file_name) {
         if (!searchfile(CWD, file_name)) {
             throw new IllegalArgumentException("File does not exist.");
         }
     }
 
     // a private method to search file
-    private boolean searchfile(File directory, String file_name) {
+    public static boolean searchfile(File directory, String file_name) {
         File[] files = directory.listFiles();
         for (File file : files) {
             if (file.getName().equals(file_name)) {
                 return true;
+            }
+            if (file.isDirectory()){
+                searchfile(file, file_name);
             }
         }
         return false;
     }
 
     // copy file into staging area
-    public void copy_file(String file_name) throws IOException {
+    public static void copy_file(String file_name) throws IOException {
         Path sourcePath = Paths.get(file_name); // 源文件路径
         File copy_version = join(staging_area, file_name);
         Files.copy(sourcePath, copy_version.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    public static void add(String file_name) throws IOException {
+        ValidCheck(file_name);
+        copy_file(file_name);
     }
 
 }
