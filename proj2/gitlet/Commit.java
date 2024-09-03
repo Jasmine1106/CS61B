@@ -11,8 +11,8 @@ import static gitlet.Repository.OBJECT_DIR;
 import static gitlet.Repository.BLOB_DIR;
 import static gitlet.Utils.join;
 import static gitlet.Utils.sha1;
-
-import java.util.Date;
+import static gitlet.Repository.COMMIT_DIR;
+import static gitlet.Repository.BLOB_DIR;
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -35,14 +35,14 @@ public class Commit implements Serializable {
      */
 
     /** The message of this Commit. */
-    private String message;
+    private final String message;
     /** use java.time and java.time.DatetimeFormatter class rather than spec recommending.
      * The timestamps  */
     private String timestamp = makeTimestamp();
     /** the sha1 code of this commit*/
-    String uid = sha1();
+    private String uid = sha1();
     /** the parent commit*/
-    String parent;
+    private String parent;
 
 
     /* TODO: fill in the rest of this class. */
@@ -77,13 +77,10 @@ public class Commit implements Serializable {
         return true;
     }
 
-    // search wheter file in staging file is already in CWD,if so, update it and delete the old version; if not, creat that file
+
+    // search wheter file in staging file is already in BLOB_DIR, if so, update it and delete the old version; if not, creat that file
     private void update_file(String file_name){
-        boolean ifExist = Add.checkFileExist(CWD, file_name);
-        if(ifExist) {
-            replace_file(file_name);
-        }
-        File new_file = join(CWD, file_name);
+        boolean ifExist = Add.checkFileEXistance(BLOB_DIR, file_name);
     }
 
     /** using TreeMap to store the information of commit history, the key is the file_name ,value if the */
