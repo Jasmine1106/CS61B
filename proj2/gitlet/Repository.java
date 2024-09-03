@@ -1,5 +1,7 @@
 package gitlet;
 
+import edu.princeton.cs.algs4.ST;
+
 import java.io.File;
 import static gitlet.Utils.*;
 
@@ -26,25 +28,43 @@ public class Repository {
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
-    public static final File Staging_area = join(GITLET_DIR, "Staging_area");
+    /** the first floor of the directory*/
+    public static final File OBJECT_DIR = join(GITLET_DIR, "OBJECT_DIR");
+    public static final File STAGE_DIR = join(GITLET_DIR, "STAGE_DIR");
+    /** the second floor of the directory*/
+    public static File BLOB_DIR = join(OBJECT_DIR, "BLOB_DIR");
+    public static File COMMIT_DIR = join(OBJECT_DIR, "COMMIT_DIR");
+    public static File ADDITION = join(STAGE_DIR, "ADDTION");
+    public static File REMOVAL = join(STAGE_DIR, "REMOVAL");
+
 
     /* TODO: fill in the rest of this class. */
     /**
      * Does require filesystem operations to allow for persistence.
      * (creates any necessary folders or files)
      * Remember: recommended structure (you do not have to follow):
-     * .gitlet/ -- top level folder for all persistent data in your lab12 folder
-     *    - staging_area/ -- folder containing all  the persistent data for dogs
-     *    - commit -- file containing the current story
+     * .GITLET_DIR/ -- hidden gitlet directory
+     *    - OBJECT_DIR -- folder containing all Serializable object
+     *         - BLOB_DIR -- all the reference of file object
+     *         - COMMIT_DIR -- the commit tree
+     *    - STAGE_DIR -- the staging area
+     *         - ADDITION
+     *         - REMOVAL
      */
     private static void setupPersistence() {
         // TODO
         if (GITLET_DIR.exists()) {
             System.out.println("A Gitlet version-control system already exists in the current directory.");
         } else {
+            // create the basic structrue of gitlet directory
             GITLET_DIR.mkdir();
-            Staging_area.mkdir();
-            // branch = master, time = 0, commit message = initial commit
+            OBJECT_DIR.mkdir();
+            STAGE_DIR.mkdir();
+            BLOB_DIR.mkdir();
+            COMMIT_DIR.mkdir();
+            ADDITION.mkdir();
+            REMOVAL.mkdir();
+
         }
     }
 

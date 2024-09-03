@@ -6,6 +6,10 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+
+import static gitlet.Repository.OBJECT_DIR;
+import static gitlet.Repository.BLOB_DIR;
+import static gitlet.Utils.join;
 import static gitlet.Utils.sha1;
 
 import java.util.Date;
@@ -74,9 +78,15 @@ public class Commit implements Serializable {
     }
 
     // search wheter file in staging file is already in CWD,if so, update it and delete the old version; if not, creat that file
-    private void update_file(){
-        boolean ifExist = Add.searchfile(CWD, )
+    private void update_file(String file_name){
+        boolean ifExist = Add.checkFileExist(CWD, file_name);
+        if(ifExist) {
+            replace_file(file_name);
+        }
+        File new_file = join(CWD, file_name);
     }
+
+    /** using TreeMap to store the information of commit history, the key is the file_name ,value if the */
 
 
     public void commit(String message) {

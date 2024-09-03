@@ -9,6 +9,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+import static gitlet.Repository.CWD;
+import static gitlet.Repository.STAGE_DIR;
+
 
 /**
  * add [file name]
@@ -17,26 +20,24 @@ import java.nio.file.StandardCopyOption;
  *  and remove it from the staging area if it is already there.
  */
 public class Add {
-    static File CWD = Repository.CWD;
-    static File staging_area = Repository.Staging_area;
 
 
     // check that if adding file exists
     public static void ValidCheck(String file_name) {
-        if (!searchfile(CWD, file_name)) {
+        if (!checkFileExist(CWD, file_name)) {
             throw new IllegalArgumentException("File does not exist.");
         }
     }
 
     // a private method to search file
-    public static boolean searchfile(File directory, String file_name) {
+    public static boolean checkFileExist(File directory, String file_name) {
         File[] files = directory.listFiles();
         for (File file : files) {
             if (file.getName().equals(file_name)) {
                 return true;
             }
             if (file.isDirectory()){
-                searchfile(file, file_name);
+                checkFileExist(file, file_name);
             }
         }
         return false;
@@ -45,7 +46,7 @@ public class Add {
     // copy file into staging area
     public static void copy_file(String file_name) throws IOException {
         Path sourcePath = Paths.get(file_name); // 源文件路径
-        File copy_version = join(staging_area, file_name);
+        File copy_version = join(STAGE_DIR, file_name);
         Files.copy(sourcePath, copy_version.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
