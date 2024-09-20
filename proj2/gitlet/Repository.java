@@ -38,7 +38,6 @@ public class Repository {
     /**
      * Does require filesystem operations to allow for persistence.
      * (creates any necessary folders or files)
-     * Remember: recommended structure (you do not have to follow):
      * .GITLET_DIR/ -- hidden gitlet directory
      *    - OBJECT_DIR -- folder containing all Serializable object
      *         - BLOB_DIR -- all the reference of file object

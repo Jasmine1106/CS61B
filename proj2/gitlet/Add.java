@@ -2,15 +2,14 @@ package gitlet;
 
 import java.io.File;
 import static gitlet.Utils.*;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-
 import static gitlet.Repository.CWD;
 import static gitlet.Repository.STAGE_DIR;
+import static gitlet.Repository.ADDITION;
 
 
 /**
@@ -43,10 +42,10 @@ public class Add {
         return false;
     }
 
-    // copy file into staging area
+    // copy file into staging area's ADDITION folder
     public static void copy_file(String file_name) throws IOException {
         Path sourcePath = Paths.get(file_name); // 源文件路径
-        File copy_version = join(STAGE_DIR, file_name);
+        File copy_version = join(ADDITION, file_name);
         Files.copy(sourcePath, copy_version.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
@@ -54,5 +53,7 @@ public class Add {
         ValidCheck(file_name);
         copy_file(file_name);
     }
+
+    // left a method to check if file_name is the same version with commit version
 
 }

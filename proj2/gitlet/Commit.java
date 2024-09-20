@@ -1,18 +1,23 @@
 package gitlet;
 
 // TODO: any imports you need here
+import org.checkerframework.checker.units.qual.C;
+
 import java.io.File;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.TreeMap;
 
 import static gitlet.Repository.OBJECT_DIR;
 import static gitlet.Repository.BLOB_DIR;
 import static gitlet.Utils.join;
 import static gitlet.Utils.sha1;
 import static gitlet.Repository.COMMIT_DIR;
-import static gitlet.Repository.BLOB_DIR;
+import static gitlet.Add.checkFileExist;
+import static gitlet.Repository.ADDITION;
+
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -28,12 +33,10 @@ import static gitlet.Repository.BLOB_DIR;
 public class Commit implements Serializable {
     /**
      * TODO: add instance variables here.
-     *
      * List all instance variables of the Commit class here with a useful
      * comment above them describing what that variable represents and how that
      * variable is used. We've provided one example for `message`.
      */
-
     /** The message of this Commit. */
     private final String message;
     /** use java.time and java.time.DatetimeFormatter class rather than spec recommending.
@@ -43,6 +46,10 @@ public class Commit implements Serializable {
     private String uid = sha1();
     /** the parent commit*/
     private String parent;
+    /** a treemap for storing the commit tree,ket is commit_id,value is references for bolbs*/
+    TreeMap<String, String> commit_tree = new TreeMap<>();
+
+    BlobsId = 
 
 
     /* TODO: fill in the rest of this class. */
@@ -54,9 +61,10 @@ public class Commit implements Serializable {
         if (parent == null) {
             this.timestamp = "00:00:00 UTC, Thursday, 1 January 1970";
         }
+        this.timestamp = makeTimestamp();
     }
 
-    // make a timestamp
+    // a helper method to make a timestamp
     private String makeTimestamp() {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z").withZone(ZoneId.systemDefault());
@@ -69,24 +77,30 @@ public class Commit implements Serializable {
 
     }
 
-    // if staging area havn't ant files to commit, return false.
-    private boolean checkCanCommit(File staging_area) {
-        if (staging_area.listFiles().length == 0) {
+    // if STAGE_DIR's ADDITION folder havn't ant files, return false.
+    private boolean checkCanCommit() {
+        if (ADDITION.listFiles().length == 0) {
             return false;
         }
         return true;
     }
 
-
-    // search wheter file in staging file is already in BLOB_DIR, if so, update it and delete the old version; if not, creat that file
+    /*
+    search wheter file in staging file is already in BLOB_DIR,
+    if so, update it and delete the old version; if not, creat that file
+    **/
     private void update_file(String file_name){
-        boolean ifExist = Add.checkFileEXistance(BLOB_DIR, file_name);
+        boolean ifExist = Add.checkFileExist(BLOB_DIR, file_name);
     }
 
     /** using TreeMap to store the information of commit history, the key is the file_name ,value if the */
 
 
     public void commit(String message) {
-
+        if (checkCanCommit()){
+             Commit new_commit = new Commit(message,commit_tree.lastKey());
+             new_commit.uid = sha1(new_commit);
+            commit_tree.put(new_commit.uid, BlobsId);
+        }
     }
 }
