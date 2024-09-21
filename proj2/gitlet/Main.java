@@ -65,29 +65,56 @@ public class Main {
             case "add":
                 // TODO: handle the `add [filename]` command
                 validateNumArgs(firstArg, args, 2);
-                Add.add(args[1]);
+                Repository.add(args[1]);
                 break;
             case "commit":
                 // TODO: handle the `commit [message]` command
                 validateNumArgs(firstArg, args, 2);
+                Repository.commit(args[1]);
                 break;
             case "rm":
                 // TODO: handle the `rm [file name]` command
                 validateNumArgs(firstArg, args, 2);
+                Repository.rm(args[1]);
                 break;
             case "log":
                 // TODO: handle the `log` command
                 validateNumArgs(firstArg, args, 1);
+                Repository.log();
+                break;
+            case "global-log":
+                // TODO: handle the `global-log` command
+                validateNumArgs(firstArg, args, 1);
+                Repository.global_log();
+                break;
+            case "find":
+                // TODO: handle the 'find [commit message]' command
+                validateNumArgs(firstArg, args, 2);
+                Repository.find(args[1]);
                 break;
             case "status":
                 // TODO: handle the `status` command
                 validateNumArgs(firstArg, args, 1);
+                Repository.status();
             case "checkout":
                 // TODO: handle the `checkout` command
-                validateNumArgs(firstArg, args, 1);
+                // 3 cases of this command
             case "branch":
-                // TODO: handle the `branch` command
-                validateNumArgs(firstArg, args, 1);
+                // TODO: handle the `branch [branch name]` command
+                validateNumArgs(firstArg, args, 2);
+                Repository.branch(args[1]);
+            case "rm_branch":
+                // TODO: handle the `rm_branch [branch name]` command
+                validateNumArgs(firstArg, args, 2);
+                Repository.rm_branch(args[1]);
+            case "reset":
+                // TODO: handle the `reset [commit id]` command
+                validateNumArgs(firstArg, args, 2);
+                Repository.reset(args[1]);
+            case "merge":
+                // TODO: handle the `merge [branch name]` command
+                validateNumArgs(firstArg, args, 2);
+                Repository.merge(args[1]);
             // TODO: FILL THE REST IN
             default:
                 System.out.println("No command with that name exists");
