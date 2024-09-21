@@ -15,7 +15,6 @@ import static gitlet.Repository.BLOB_DIR;
 import static gitlet.Utils.join;
 import static gitlet.Utils.sha1;
 import static gitlet.Repository.COMMIT_DIR;
-import static gitlet.Add.checkFileExist;
 import static gitlet.Repository.ADDITION;
 
 
@@ -90,7 +89,7 @@ public class Commit implements Serializable {
     if so, update it and delete the old version; if not, creat that file
     **/
     private void update_file(String file_name){
-        boolean ifExist = Add.checkFileExist(BLOB_DIR, file_name);
+        //boolean ifExist = Add.checkFileExist(BLOB_DIR, file_name);
     }
 
     /** using TreeMap to store the information of commit history, the key is the file_name ,value if the */
