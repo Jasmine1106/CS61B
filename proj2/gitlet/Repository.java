@@ -9,8 +9,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-
+import java.util.LinkedList;
+import java.util.List;
+import java.util.TreeMap;
 import static gitlet.Utils.*;
+import static gitlet.Commit.*;
+
+
+
 
 // TODO: any imports you need here
 
@@ -27,13 +33,32 @@ public class Repository {
      * comment above them describing what that variable represents and how that
      * variable is used. We've provided two examples for you.
      */
-    /** The current working directory. */
+    /** The current working directory.
+     * .GITLET_DIR/ -- hidden gitlet directory
+     *    - OBJECT_DIR/ -- folder containing all Serializable object
+     *         - BLOB_DIR/ -- all the reference of file object
+     *         - COMMIT_DIR/ -- all commit
+     *    - STAGE_DIR/ -- the staging area
+     *         - ADDITION a file storing the blob object
+     *         - REMOVAL
+     *    - BRANCH_DIR/ -- all branches wo have
+     *         - master   default branch name
+     *         - ...(other branch)
+     *    - HEAD  -- current commit_id corrsponding the current commit
+     *    - BRANCH -- current branch name
+     * */
+
+    // Default branch name.
+    private static final String DEFAULT_BRANCH_NAME = "master";
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
     /** the first floor of the directory*/
     public static final File OBJECT_DIR = join(GITLET_DIR, "OBJECT_DIR");
     public static final File STAGE_DIR = join(GITLET_DIR, "STAGE_DIR");
+    public static File BRANCH_DIR = join(GITLET_DIR, "BRANCH_DIR");
+    public static File HEAD = join (GITLET_DIR, "HEAD");
+    public static File BRANCH = join(GITLET_DIR, "BRANCH");
     /** the second floor of the directory*/
     public static File BLOB_DIR = join(OBJECT_DIR, "BLOB_DIR");
     public static File COMMIT_DIR = join(OBJECT_DIR, "COMMIT_DIR");
@@ -41,44 +66,41 @@ public class Repository {
     public static File REMOVAL = join(STAGE_DIR, "REMOVAL");
 
 
-    /* TODO: fill in the rest of this class. */
-    /** Does require filesystem operations to allow for persistence.
-     * (creates any necessary folders or files)
-     * .GITLET_DIR/ -- hidden gitlet directory
-     *    - OBJECT_DIR -- folder containing all Serializable object
-     *         - BLOB_DIR -- all the reference of file object
-     *         - COMMIT_DIR -- the commit tree
-     *    - STAGE_DIR -- the staging area
-     *         - ADDITION
-     *         - REMOVAL
-     */
-    private static void setupPersistence() {
-        // TODO
-        if (GITLET_DIR.exists()) {
-            System.out.println("A Gitlet version-control system already exists in the current directory.");
-        } else {
-            // create the basic structrue of gitlet directory
-            GITLET_DIR.mkdir();
-            OBJECT_DIR.mkdir();
-            STAGE_DIR.mkdir();
-            BLOB_DIR.mkdir();
-            COMMIT_DIR.mkdir();
-            ADDITION.mkdir();
-            REMOVAL.mkdir();
 
+
+    /* TODO: fill in the rest of this class. */
+    // Does require filesystem operations to allow for persistence.
+
+    /** init
+     *  Creates a new Gitlet version-control system in the current directory.
+     *  This system will automatically start with one commit: a commit that contains no files and has the commit message: initial commit.
+     *  It will have a single branch: master, which initially points to this initial commit, and master will be the current branch.
+     *  The timestamp for this initial commit will be 00:00:00 UTC,*Thursday, 1 January 1970
+     *  in whatever format you choose for dates (this is called “The (Unix) Epoch”, represented internally by the time 0.)
+     */
+    public static void init() throws IOException {
+        if (GITLET_DIR.exists()) {
+            exit("A Gitlet version-control system already exists in the current directory.");
         }
+        setupPersistence();
+        Commit inital = new Commit();
+        // TODO: Set up master branch points to this inital commit
+
     }
 
-    /** Creates a new Gitlet version-control system in the current directory.
-     *  This system will automatically start with one commit: a commit that contains no files and has the commit message
-     *  initial commit. It will have a single branch: master, which initially points to this initial commit,
-     *  and master will be the current branch. The timestamp for this initial commit will be 00:00:00 UTC,*Thursday, 1 January 1970
-     *  in whatever format you choose for dates (this is called “The (Unix) Epoch”, represented internally by the time 0.)
-     *  It will have a single branch: master, which initially points to this initial commit */
-    public static void init(){
-        setupPersistence();
-        Commit inital = new Commit("initial commit", null);
-        // Set up branch as master
+    /** create the basic structrue of gitlet directory */
+    private static void setupPersistence() throws IOException {
+        // TODO
+        GITLET_DIR.mkdir();
+        OBJECT_DIR.mkdir();
+        STAGE_DIR.mkdir();
+        BLOB_DIR.mkdir();
+        COMMIT_DIR.mkdir();
+        BRANCH_DIR.mkdir();
+        ADDITION.createNewFile();
+        REMOVAL.createNewFile();
+        HEAD.createNewFile();
+        BRANCH.createNewFile();
     }
 
     /** add [file name]
@@ -87,34 +109,17 @@ public class Repository {
      *  and remove it from the staging area if it is already there.
      */
     // a private method to search file recursively
-   private static File SearchFile(File directory, String file_name) {
-        File[] files = directory.listFiles();
-        for (File file : files) {
-            if (file.getName().equals(file_name)) {
-                return file;
-            }
-            if (file.isDirectory()){
-                SearchFile(file, file_name);
-            }
-        }
-        return null;
-    }
-
-    // copy file [String name ] into destination DesFolder
-    private static void copy_file(String file_name, File DesFolder) throws IOException {
-        Path sourcePath = Paths.get(file_name); // 源文件路径
-        File copy_version = join(DesFolder, file_name);
-        Files.copy(sourcePath, copy_version.toPath(), StandardCopyOption.REPLACE_EXISTING);
-    }
-
     public static void add(String file_name) throws IOException {
-        if (SearchFile(CWD, file_name) == null) {
+        File source_file = SearchFile(CWD, file_name);
+        if (source_file == null) {
             throw new IllegalArgumentException("File does not exist.");
         }
-        copy_file(file_name, ADDITION);
+        Blob blob = new Blob(source_file);
+        blob.saveTo(ADDITION);
+        // TODO:check if file_name corrsponding file is the same version with commit version
+
     }
 
-    // left a method to check if file_name corrsponding file is the same version with commit version
 
 
     /** commit [message]
@@ -129,7 +134,16 @@ public class Repository {
      *
      */
     public static void commit(String message) {
-
+        if (ADDITION.listFiles().length == 0) {
+            exit("No changes added to the commit.");
+        }
+        if (message == null) {
+            exit("Please enter a commit message.");
+        }
+        Commit parent_commit = ;
+        Commit commit_object = new Commit(message, parent_commit_id, );
+        String commit_id = commit_object.getCommit_id();
+        saveCommitObject(commit_object, commit_id);
     }
 
     /** rm [file name]
@@ -140,18 +154,20 @@ public class Repository {
      * */
 
     public static void rm(String file_name) throws IOException {
-        File staged_file = SearchFile(ADDITION, file_name);
         // 1.check Addition folder
+        File staged_file = SearchFile(ADDITION, file_name);
         if (staged_file != null) {
-            if (!staged_file.delete()){
-                throw new UnsupportedOperationException("can't delete file in Addition");
+            if (!restrictedDelete(staged_file)){
+                throw  Utils.error("can't delete file in Addition");
             }
-            // 2.check current commit folder
-            // TODO: finish current commit folder building
-            File commited_file = SearchFile(COMMIT_DIR, file_name);
-            if (commited_file != null) {
-                copy_file(file_name, REMOVAL);      // stage it
-                if (!commited_file.delete()) {
+        // 2.check current commit folder
+        // TODO: finish current commit folder building
+        else{
+                File commited_file = SearchFile(COMMIT_DIR, file_name);
+                // instanciate it and stage it
+                Blob blob = new Blob(commited_file);
+                writeObject(REMOVAL, blob);
+                if (!restrictedDelete(commited_file)) {
                     throw new UnsupportedEncodingException("can't delete file in Removal");
                 }
             }

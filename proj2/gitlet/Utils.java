@@ -10,10 +10,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.List;
@@ -236,4 +241,28 @@ class Utils {
         System.out.printf(msg, args);
         System.out.println();
     }
+
+    /** some statichelper mathod i wrote ---------------------------------------------------------------------------*/
+
+    // search file_name in director recursively ,return the file object ,or null if not found.
+    static File SearchFile(File directory, String file_name) {
+        File[] files = directory.listFiles();
+        for (File file : files) {
+            if (file.getName().equals(file_name)) {
+                return file;
+            }
+            if (file.isDirectory()){
+                SearchFile(file, file_name);
+            }
+        }
+        return null;
+    }
+
+
+
+    public static void exit(String message, Object... args) {
+        message(message, args);
+        System.exit(0);
+    }
+
 }

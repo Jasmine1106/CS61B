@@ -1,6 +1,8 @@
 package gitlet;
 
 import java.io.IOException;
+import static gitlet.Utils.*;
+
 
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author Jasmine1106
@@ -63,19 +65,26 @@ public class Main {
                 Repository.init();
                 break;
             case "add":
-                // TODO: handle the `add [filename]` command
+                // TODO: handle the `add [file_name]` command
                 validateNumArgs(firstArg, args, 2);
-                Repository.add(args[1]);
+                String file_name = args[1];
+                Repository.add(file_name);
                 break;
             case "commit":
                 // TODO: handle the `commit [message]` command
                 validateNumArgs(firstArg, args, 2);
                 Repository.commit(args[1]);
+                String message = args[1];
+                if (message.length() == 0) {
+                    exit("Please enter a commit message.");
+                }
+                Repository.commit(message);
                 break;
             case "rm":
-                // TODO: handle the `rm [file name]` command
+                // TODO: handle the `rm [fileName]` command
                 validateNumArgs(firstArg, args, 2);
-                Repository.rm(args[1]);
+                String fileName = args[1];
+                Repository.rm(fileName);
                 break;
             case "log":
                 // TODO: handle the `log` command
