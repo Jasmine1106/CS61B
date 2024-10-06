@@ -155,7 +155,7 @@ public class Repository {
      *
      */
     public static void commit(String message) {
-        if (ADDITION.listFiles().length == 0) {
+        if (add_stage.isEmpty() && remove_stage.isEmpty()) {
             exit("No changes added to the commit.");
         }
         if (message == null) {

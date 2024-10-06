@@ -55,8 +55,6 @@ public class Stage  implements Serializable {
         writeObject(Repository.REMOVAL, this);
     }
 
-
-
     // check if stage contains this blob
     public boolean ifContains(Blob blob) {
         String blob_id = blob.get_BlobId();
@@ -69,11 +67,13 @@ public class Stage  implements Serializable {
         blob_IdToPath.remove(blob_id);
     }
 
-
-
     // clear stage
     public void clear() {
         blob_IdToPath.clear();
+    }
+
+    public boolean isEmpty() {
+        return blob_IdToPath.isEmpty();
     }
 
 }
