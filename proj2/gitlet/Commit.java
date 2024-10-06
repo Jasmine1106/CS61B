@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 
@@ -39,21 +41,21 @@ public class Commit implements Serializable {
     /** the sha1 code of this commit*/
     private String commit_id;
     /** a treemap for storing blobs, file paths is key, and blob_id is value */
-    private  TreeMap<String, String> pathToBlobID;
+    private Map<String, String> pathToBlobID;
     /** a Linked list for sorting all parents' commit_id*/
-    private LinkedList<String> parents;
+    private List<String> parents;
     // File storing the commit object
-    private File commmit_file;
+    private transient File commit_file;
 
 
 
     /* TODO: fill in the rest of this class. */
     /** creat a commit object */
-    public Commit(String message, LinkedList<String> parents, TreeMap<String, String> pathToBlobID) {
+    public Commit(String message, List<String> parents, Map<String, String> pathToBlobID) {
         this.message = message;
         this.timestamp = makeTimestamp();
         this.commit_id = generateID();
-        this.commmit_file = generate_commit_file();
+        this.commit_file = generate_commit_file();
         this.parents = parents;
         this.pathToBlobID = pathToBlobID;
     }
@@ -64,7 +66,7 @@ public class Commit implements Serializable {
         this.pathToBlobID = new TreeMap<>();
         this.timestamp = "00:00:00 UTC, Thursday, 1 January 1970";
         this.commit_id = generateID();
-        this.commmit_file = generate_commit_file();
+        this.commit_file = generate_commit_file();
         save_HEAD(this.commit_id);      // write this commit_id into HEAD
     }
 
@@ -86,17 +88,32 @@ public class Commit implements Serializable {
         writeObject(commit_file, this);
     }
 
-    // get HEAD id from its file
-    public static String from_Head(){
-        String head_commit_id = readContentsAsString(HEAD);
-        return head_commit_id;
+    public String from_Head() {
+        return readContentsAsString(HEAD);
+    }
+
+    // get a commit object from commit_id
+    public static Commit fromFile(String commitId) {
+        File commitFile = join(COMMIT_DIR, commitId);
+        return readObject(commitFile, Commit.class);
     }
 
 
-    public  String getCommit_id() {
+    /** some get method */
+    public List<String> getParents() {
+        return parents;
+    }
+
+
+
+    public Map<String, String> getPathToBlobID() {
+        return pathToBlobID;
+    }
+
+    public String getCommit_id() {
         return commit_id;
     }
-    public  LinkedList<String> update_parents() {
+    public  List<String> update_parents() {
         String update_id =  from_Head();
         parents.add(update_id);
         return parents;

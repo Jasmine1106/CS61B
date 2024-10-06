@@ -37,4 +37,8 @@ public class Blob implements Serializable {
         return this.blob_id;
     }
 
+    public String get_BlobPath() {
+        return this.source.getPath();
+    }
+
 }

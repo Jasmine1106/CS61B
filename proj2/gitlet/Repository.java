@@ -4,6 +4,7 @@ import edu.princeton.cs.algs4.ST;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,6 +12,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import static gitlet.Utils.*;
 import static gitlet.Commit.*;
@@ -49,7 +51,7 @@ public class Repository {
      * */
 
     // Default branch name.
-    private static final String DEFAULT_BRANCH_NAME = "master";
+    public static final String DEFAULT_BRANCH_NAME = "master";
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
@@ -62,9 +64,12 @@ public class Repository {
     /** the second floor of the directory*/
     public static File BLOB_DIR = join(OBJECT_DIR, "BLOB_DIR");
     public static File COMMIT_DIR = join(OBJECT_DIR, "COMMIT_DIR");
-    public static File ADDITION = join(STAGE_DIR, "ADDTION");
+    public static File ADDITION = join(STAGE_DIR, "ADDITION");
     public static File REMOVAL = join(STAGE_DIR, "REMOVAL");
 
+    // instance variable
+    public static Stage add_stage = new Stage();      // add stage
+    public static Stage remove_stage = new Stage();  // remove stage
 
 
 
@@ -82,10 +87,18 @@ public class Repository {
         if (GITLET_DIR.exists()) {
             exit("A Gitlet version-control system already exists in the current directory.");
         }
+        /** 1. creat the gitlet directory
+         *  2. initial commit
+         *  3. set current branch to master and update BRANCH_DIR
+         */
         setupPersistence();
+        // create initial commit
         Commit inital = new Commit();
-        // TODO: Set up master branch points to this inital commit
-
+        inital.save();
+        // branch
+        writeContents(BRANCH, DEFAULT_BRANCH_NAME);
+        File head_file = join(BRANCH_DIR, DEFAULT_BRANCH_NAME);
+        writeContents(head_file, inital.getCommit_id());
     }
 
     /** create the basic structrue of gitlet directory */
@@ -107,6 +120,9 @@ public class Repository {
      *  Adds a copy of the file as it currently exists to the staging area.The staging area should be somewhere in .gitlet.
      *  If the current working version of the file is identical to the version in the current commit, do not stage it to be added,
      *  and remove it from the staging area if it is already there.
+     * Special Case:
+     *   .file_version is identical to current commit, don't add
+     *   .file is in remove_stage, delete it
      */
     // a private method to search file recursively
     public static void add(String file_name) throws IOException {
@@ -115,10 +131,15 @@ public class Repository {
             throw new IllegalArgumentException("File does not exist.");
         }
         Blob blob = new Blob(source_file);
-        blob.saveTo(ADDITION);
-        // TODO:check if file_name corrsponding file is the same version with commit version
-
+        if (remove_stage.ifContains(blob) ) {
+            remove_stage.delete(blob);
+        }
+        add_stage.add_blob(blob.get_BlobId(), blob.get_BlobPath());
+        // save
+        add_stage.saveAddStage();
+        remove_stage.saveRemoveStage();
     }
+
 
 
 
@@ -140,11 +161,89 @@ public class Repository {
         if (message == null) {
             exit("Please enter a commit message.");
         }
-        Commit parent_commit = ;
-        Commit commit_object = new Commit(message, parent_commit_id, );
-        String commit_id = commit_object.getCommit_id();
-        saveCommitObject(commit_object, commit_id);
+        Commit parent_commit = readCurCommit();
+        // update parents
+        List<String> parents = update_parents(parent_commit);
+        // update pathToBlobID
+        Map<String, String> pathToBlobID = update_pathToBlobID(parent_commit);
+        // create new commit and save it
+        Commit new_commit = new Commit(message, parents, pathToBlobID );
+        saveNewCommit(new_commit);
+
     }
+    private static void saveNewCommit(Commit new_commit) {
+        // save commit object and HEAD
+        new_commit.save();
+        save_HEAD(new_commit.getCommit_id());
+        // reset stage area
+        add_stage.clear();
+        remove_stage.clear();
+        add_stage.saveAddStage();
+        remove_stage.saveRemoveStage();
+    }
+
+    // return current commit object
+    private static Commit readCurCommit() {
+        String commit_id = readContentsAsString(HEAD);
+        return fromFile(commit_id);
+    }
+
+    private static Stage readAddStage() {
+        if (!ADDITION.exists()) {
+            return new Stage();
+        }
+        return readObject(ADDITION, Stage.class);
+    }
+
+    private static Stage readRemoveStage() {
+        if (!REMOVAL.exists()) {
+            return new Stage();
+        }
+        return readObject(REMOVAL, Stage.class);
+    }
+
+    private static List<String> update_parents(Commit parent_commit) {
+        List<String> parents = parent_commit.getParents();
+        parents.add(parent_commit.getCommit_id());
+        return parents;
+    }
+
+    private static Map<String, String> update_pathToBlobID(Commit parent_commit) {
+        Map<String, String> pathToBlobID = parent_commit.getPathToBlobID();
+        Map<String, String> add_stage_map = calAddStageMap();
+        Map<String, String> remove_stage_map = calRemoveStageMap();
+        if (add_stage_map.size() != 0) {
+            for (String blob_id : add_stage_map.keySet()) {
+                pathToBlobID.put(add_stage_map.get(blob_id), blob_id);
+            }
+        }
+        if (remove_stage_map.size() != 0) {
+            for (String blob_id : remove_stage_map.keySet()) {
+                pathToBlobID.remove(remove_stage_map.get(blob_id));
+            }
+        }
+        return  pathToBlobID;
+    }
+
+    public static Map<String, String> calAddStageMap() {
+        add_stage = readAddStage();
+        Map<String, String> add_stage_map = new TreeMap<>();
+        List<Blob> add_stage_blob = add_stage.getBlobList();
+        for (Blob blob : add_stage_blob) {
+            add_stage_map.put(blob.get_BlobId(), blob.get_BlobPath());
+        }
+        return add_stage_map;
+    }
+    public static Map<String, String> calRemoveStageMap() {
+        remove_stage = readRemoveStage();
+        Map<String, String> remove_stage_map = new TreeMap<>();
+        List<Blob> remove_stage_blob = remove_stage.getBlobList();
+        for (Blob blob : remove_stage_blob) {
+            remove_stage_map.put(blob.get_BlobId(), blob.get_BlobPath());
+        }
+        return remove_stage_map;
+    }
+
 
     /** rm [file name]
      *  Unstage the file if it is currently staged for addition.
@@ -153,25 +252,17 @@ public class Repository {
      *  (do not remove it unless it is tracked in the current commit).
      * */
 
-    public static void rm(String file_name) throws IOException {
+    public static void rm(String file_name)  {
+        File rm_file = new File(file_name);
+        Blob rm_blob = new Blob(rm_file);
         // 1.check Addition folder
-        File staged_file = SearchFile(ADDITION, file_name);
-        if (staged_file != null) {
-            if (!restrictedDelete(staged_file)){
-                throw  Utils.error("can't delete file in Addition");
-            }
+        if (add_stage.ifContains(rm_blob)) {
+            add_stage.delete(rm_blob);
+        }
         // 2.check current commit folder
         // TODO: finish current commit folder building
-        else{
-                File commited_file = SearchFile(COMMIT_DIR, file_name);
-                // instanciate it and stage it
-                Blob blob = new Blob(commited_file);
-                writeObject(REMOVAL, blob);
-                if (!restrictedDelete(commited_file)) {
-                    throw new UnsupportedEncodingException("can't delete file in Removal");
-                }
-            }
-        }
+
+
     }
 
     /** log
