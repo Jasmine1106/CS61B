@@ -52,84 +52,84 @@ public class Main {
      * a name for a reference (a SHA-1 identifier) to a commit node. This command does NOT immediately switch to the newly created
      * branch (just as in real Git). Before you ever call branch, your code should be running with a default branch called “master”.
      */
-    public static void main(String[] args) throws IOException {
-        // TODO: what if args is empty?
-        if (args == null) {
-            System.out.println("Please enter a command.");
-        }
-        String firstArg = args[0];
-        switch(firstArg) {
-            case "init":
-                // TODO: handle the `init` command
-                validateNumArgs(firstArg, args, 1);
-                Repository.init();
-                break;
-            case "add":
-                // TODO: handle the `add [file_name]` command
-                validateNumArgs(firstArg, args, 2);
-                String file_name = args[1];
-                Repository.add(file_name);
-                break;
-            case "commit":
-                // TODO: handle the `commit [message]` command
-                validateNumArgs(firstArg, args, 2);
-                Repository.commit(args[1]);
-                String message = args[1];
-                if (message.length() == 0) {
-                    exit("Please enter a commit message.");
-                }
-                Repository.commit(message);
-                break;
-            case "rm":
-                // TODO: handle the `rm [fileName]` command
-                validateNumArgs(firstArg, args, 2);
-                String fileName = args[1];
-                Repository.rm(fileName);
-                break;
-            case "log":
-                // TODO: handle the `log` command
-                validateNumArgs(firstArg, args, 1);
-                Repository.log();
-                break;
-            case "global-log":
-                // TODO: handle the `global-log` command
-                validateNumArgs(firstArg, args, 1);
-                Repository.global_log();
-                break;
-            case "find":
-                // TODO: handle the 'find [commit message]' command
-                validateNumArgs(firstArg, args, 2);
-                Repository.find(args[1]);
-                break;
-            case "status":
-                // TODO: handle the `status` command
-                validateNumArgs(firstArg, args, 1);
-                Repository.status();
-            case "checkout":
-                // TODO: handle the `checkout` command
-                // 3 cases of this command
-            case "branch":
-                // TODO: handle the `branch [branch name]` command
-                validateNumArgs(firstArg, args, 2);
-                Repository.branch(args[1]);
-            case "rm_branch":
-                // TODO: handle the `rm_branch [branch name]` command
-                validateNumArgs(firstArg, args, 2);
-                Repository.rm_branch(args[1]);
-            case "reset":
-                // TODO: handle the `reset [commit id]` command
-                validateNumArgs(firstArg, args, 2);
-                Repository.reset(args[1]);
-            case "merge":
-                // TODO: handle the `merge [branch name]` command
-                validateNumArgs(firstArg, args, 2);
-                Repository.merge(args[1]);
-            // TODO: FILL THE REST IN
-            default:
-                System.out.println("No command with that name exists");
-        }
+    public static void main(String[] args)  {
+        try {
+            // 检查 args 是否为空或者没有提供参数
+            if (args == null || args.length == 0) {
+                System.out.println("Please enter a command.");
+                return;
+            }
 
+            String firstArg = args[0];
+            switch(firstArg) {
+                case "init":
+                    validateNumArgs(firstArg, args, 1);
+                    Repository.init();
+                    break;
+                case "add":
+                    validateNumArgs(firstArg, args, 2);
+                    String file_name = args[1];
+                    Repository.add(file_name);
+                    break;
+                case "commit":
+                    validateNumArgs(firstArg, args, 2);
+                    String message = args[1];
+                    if (message.length() == 0) {
+                        exit("Please enter a commit message.");
+                    }
+                    Repository.commit(message);
+                    break;
+                case "rm":
+                    validateNumArgs(firstArg, args, 2);
+                    String fileName = args[1];
+                    Repository.rm(fileName);
+                    break;
+                case "log":
+                    validateNumArgs(firstArg, args, 1);
+                    Repository.log();
+                    break;
+                case "global-log":
+                    validateNumArgs(firstArg, args, 1);
+                    Repository.global_log();
+                    break;
+                case "find":
+                    validateNumArgs(firstArg, args, 2);
+                    Repository.find(args[1]);
+                    break;
+                case "status":
+                    validateNumArgs(firstArg, args, 1);
+                    Repository.status();
+                    break;
+                case "checkout":
+                    // 需要处理 checkout 命令的不同情况
+                    // ...
+                    break;
+                case "branch":
+                    validateNumArgs(firstArg, args, 2);
+                    Repository.branch(args[1]);
+                    break;
+                case "rm_branch":
+                    validateNumArgs(firstArg, args, 2);
+                    Repository.rm_branch(args[1]);
+                    break;
+                case "reset":
+                    validateNumArgs(firstArg, args, 2);
+                    Repository.reset(args[1]);
+                    break;
+                case "merge":
+                    validateNumArgs(firstArg, args, 2);
+                    Repository.merge(args[1]);
+                    break;
+                // TODO: FILL THE REST IN
+                default:
+                    System.out.println("No command with that name exists");
+            }
+        } catch (Exception e) { // 捕获所有异常
+            e.printStackTrace(); // 打印异常堆栈信息
+            // 可以根据需要添加更详细的错误处理逻辑
+        }
     }
+
 
     public static void validateNumArgs(String cmd, String[] args, int n) {
         if (args.length != n) {

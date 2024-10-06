@@ -125,7 +125,7 @@ public class Repository {
      *   .file is in remove_stage, delete it
      */
     // a private method to search file recursively
-    public static void add(String file_name) throws IOException {
+    public static void add(String file_name) {
         File source_file = SearchFile(CWD, file_name);
         if (source_file == null) {
             throw new IllegalArgumentException("File does not exist.");
