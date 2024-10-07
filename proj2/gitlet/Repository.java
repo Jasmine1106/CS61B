@@ -410,7 +410,77 @@ public class Repository {
      *  The staging area is cleared, unless the checked-out branch is the current branch (see Failure cases below).
      */
     public static void checkoutBranch(String branch_name) {
+        if (!checkIfFilesTracked()) {
+            exit("There is an untracked file in the way; delete it, or add and commit it first.");
+        }
+        if (readCurBranch().equals(branch_name)) {
+            exit("No need to checkout the current branch.");
+        }
+        clearCWD();
+        // search BranchDIR
+        String commit_id = null;
+        File[] branchesList = BRANCH_DIR.listFiles();
+        for (File branch : branchesList) {
+            if (branch.getName().equals(branch_name)) {
+                commit_id = readContentsAsString(branch);
+            }
+        }
+        // if branch_name doesn't exist
+        if (commit_id == null) {
+            exit("No such branch exists.");
+        }
+        Commit checkedCommit = fromFile(commit_id);
+        List<Blob> checkedBlobList = checkedCommit.getBlobList();
+        for (Blob blob : checkedBlobList) {
+            checkoutFromCommit(commit_id, blob.getFileName());
+        }
 
+        Branch.updateCurBranch(commit_id);
+        updateHEAD(commit_id);
+        clearStage();
+    }
+
+    private static void updateHEAD(String commit_id) {
+        writeContents(HEAD, commit_id);
+    }
+
+    private static String readCurBranch() {
+        return readContentsAsString(BRANCH);
+    }
+
+
+    /** TODO:check stage areas , Blob_DIR and CWD, if any file in CWD isn't in Blob_DIR or stage ares, return false.
+     * */
+    private static boolean checkIfFilesTracked () {
+        File[] allCWDFiles = CWD.listFiles();
+        for (File file : allCWDFiles) {
+            Blob blob = new Blob(file);
+            if (!blob.getBlobSavedFile().exists()) {
+                if (!checkBlobStaged()) {
+                    return false;
+                }
+            }
+
+        }
+    }
+
+    private static void clearCWD() {
+        File[] allCWDFiles = CWD.listFiles();
+        if (allCWDFiles != null) {
+            for (File file : allCWDFiles) {
+                restrictedDelete(file);
+            }
+        }
+    }
+
+
+    private static void clearStage() {
+        Stage addStage = readAddStage();
+        Stage removeStage = readRemoveStage();
+        addStage.clear();
+        removeStage.clear();
+        addStage.saveAddStage();
+        removeStage.saveRemoveStage();
     }
 
     private static void writeBlobContentsIntoCWD(Blob blob) {
@@ -464,50 +534,9 @@ public class Repository {
      *  The command is essentially checkout of an arbitrary commit that also changes the current branch head.
      */
     public static void reset(String commit_id) {
-        if (!checkIfFilesTracked()) {
-            exit("There is an untracked file in the way; delete it, or add and commit it first.");
-        }
-        clearCWD();
-        Commit checkedCommit = fromFile(commit_id);
-        List<Blob> checkedBlobList = checkedCommit.getBlobList();
-        for (Blob blob : checkedBlobList) {
-            checkoutFromCommit(commit_id, blob.getFileName());
-        }
-        Branch.updateCurBranch(commit_id);
-        clearStage();
+
+
     }
-
-    /** check stage areas , Blob_DIR and CWD, if any file in CWD isn't in Blob_DIR or stage ares, return false.
-     * */
-    private static boolean checkIfFilesTracked () {
-        File[] allCWDFiles = CWD.listFiles();
-        read
-        for (File file : allCWDFiles) {
-            Blob blob = new Blob(file);
-
-        }
-    }
-
-    private static void clearCWD() {
-        File[] allCWDFiles = CWD.listFiles();
-        if (allCWDFiles != null) {
-            for (File file : allCWDFiles) {
-                restrictedDelete(file);
-            }
-        }
-    }
-
-
-    private static void clearStage() {
-        Stage addStage = readAddStage();
-        Stage removeStage = readRemoveStage();
-        addStage.clear();
-        removeStage.clear();
-        addStage.saveAddStage();
-        removeStage.saveRemoveStage();
-    }
-
-
 
     /** merge [branch name]
      *  Merges files from the given branch into the current branch. This method is a bit complicated,

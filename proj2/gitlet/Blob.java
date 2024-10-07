@@ -58,6 +58,10 @@ public class Blob implements Serializable {
         return fileContents;
     }
 
+    public File getBlobSavedFile() {
+        return blobSavedFile;
+    }
+
     private  File generateBlobSavedName(){
         return join(BLOB_DIR, blob_id);
     }

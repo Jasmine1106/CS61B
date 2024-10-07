@@ -36,15 +36,15 @@ public class Commit implements Serializable {
     private final String message;
     /** use java.time and java.time.DatetimeFormatter class rather than spec recommending.
      * The timestamps  */
-    private String timestamp;
+    private final String timestamp;
     /** the sha1 code of this commit*/
-    private String commit_id;
+    private final String commit_id;
     /** a treemap for storing blobs, file paths is key, and blob_id is value */
-    private Map<String, String> pathToBlobID;
+    private final Map<String, String> pathToBlobID;
     /** a Linked list for sorting all parents' commit_id*/
-    private List<String> parents;
+    private final List<String> parents;
     // File storing the commit object
-    private transient File commit_file;
+    private final transient File commit_file;
 
 
 
@@ -127,6 +127,7 @@ public class Commit implements Serializable {
         }
         return blobList;
     }
+
 
 
     // a helper method to make a timestamp
