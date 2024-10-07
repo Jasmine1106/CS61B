@@ -245,7 +245,7 @@ class Utils {
     /** some statichelper mathod i wrote ---------------------------------------------------------------------------*/
 
     // search file_name in director recursively ,return the file object ,or null if not found.
-    static File SearchFile(File directory, String file_name) {
+    public static File SearchFile(File directory, String file_name) {
         File[] files = directory.listFiles();
         for (File file : files) {
             if (file.getName().equals(file_name)) {

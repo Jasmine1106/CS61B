@@ -1,16 +1,11 @@
 package gitlet;
 
-import edu.princeton.cs.algs4.ST;
+
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.LinkedList;
+import java.nio.charset.StandardCharsets;
+
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -116,6 +111,13 @@ public class Repository {
         BRANCH.createNewFile();
     }
 
+    public static void checkIfInited() {
+        if (!GITLET_DIR.exists()) {
+            exit("Not in an initialized Gitlet directory.");
+        }
+    }
+
+
     /** add [file name]
      *  Adds a copy of the file as it currently exists to the staging area.The staging area should be somewhere in .gitlet.
      *  If the current working version of the file is identical to the version in the current commit, do not stage it to be added,
@@ -128,13 +130,13 @@ public class Repository {
     public static void add(String file_name) {
         File source_file = SearchFile(CWD, file_name);
         if (source_file == null) {
-            throw new IllegalArgumentException("File does not exist.");
+            exit("File does not exist.");
         }
         Blob blob = new Blob(source_file);
         if (remove_stage.ifContains(blob) ) {
             remove_stage.delete(blob);
         }
-        add_stage.add_blob(blob.get_BlobId(), blob.get_BlobPath());
+        add_stage.addBlobInMap(blob.get_BlobId(), blob.get_BlobPath());
         // save
         add_stage.saveAddStage();
         remove_stage.saveRemoveStage();
@@ -222,7 +224,7 @@ public class Repository {
                 pathToBlobID.remove(remove_stage_map.get(blob_id));
             }
         }
-        return  pathToBlobID;
+        return pathToBlobID;
     }
 
     public static Map<String, String> calAddStageMap() {
@@ -255,14 +257,25 @@ public class Repository {
     public static void rm(String file_name)  {
         File rm_file = new File(file_name);
         Blob rm_blob = new Blob(rm_file);
+        Commit cur_commit = readCurCommit();
         // 1.check Addition folder
         if (add_stage.ifContains(rm_blob)) {
             add_stage.delete(rm_blob);
         }
         // 2.check current commit folder
-        // TODO: finish current commit folder building
-
-
+        else if (cur_commit.getPathToBlobID().containsKey(rm_blob.get_BlobPath())) {
+            remove_stage.addBlobInMap(rm_blob.get_BlobId(), rm_blob.get_BlobPath());
+            File cwd_rm_file = SearchFile(CWD, file_name);
+            if (cwd_rm_file != null) {
+                cwd_rm_file.delete();
+            }
+        }
+        else {
+            exit("File not found.");
+        }
+        // save
+        add_stage.saveAddStage();
+        remove_stage.saveRemoveStage();
     }
 
     /** log
@@ -273,6 +286,16 @@ public class Repository {
      *  the time the commit was made, and the commit message.
      * */
     public static void log () {
+        Commit cur_commit = readCurCommit();
+        List<String> history = cur_commit.getParents();
+        cur_commit.print();
+        while (history.size() != 0) {
+            String parent_id = history.getLast();
+            Commit parent_commit = fromFile(parent_id);
+            parent_commit.print();
+            history = parent_commit.getParents();
+        }
+        // TODO: branch case:
 
     }
 
@@ -281,7 +304,11 @@ public class Repository {
      *  Hint: there is a useful method in gitlet.Utils that will help you iterate over files within a directory.
      * */
     public static void global_log() {
-
+        List<String> commit_list = Utils.plainFilenamesIn(COMMIT_DIR);
+        for (String commit_id : commit_list) {
+            Commit commit_object = fromFile(commit_id);
+            commit_object.print();
+        }
     }
 
     /** find [commit message]
@@ -291,18 +318,60 @@ public class Repository {
      *  as for the commit command below. Hint: the hint for this command is the same as the one for global-log.
      * */
 
-
     public static void find(String commit_message) {
-
+        List<String> commit_list = Utils.plainFilenamesIn(COMMIT_DIR);
+        for (String commit_id : commit_list) {
+            Commit commit_object = fromFile(commit_id);
+            if (commit_message.equals(commit_object.getMessage())) {
+                System.out.println(commit_object.getCommit_id());
+                break;
+            }
+        }
+        exit("Found no commit with that message.");
     }
 
     /** status
      *  Displays what branches currently exist, and marks the current branch with a *.
      *  Also displays what files have been staged for addition or removal.
      *  An example of the exact format it should follow is as follows.
+     * === Branches ===
+     * *master
+     * other-branch
+     *
+     * === Staged Files ===
+     * wug.txt
+     * wug2.txt
+     *
+     * === Removed Files ===
+     * goodbye.txt
+     *
      * */
     public static void status() {
-
+        // === branches ===
+        String cur_branch = readContentsAsString(BRANCH);
+        List<String> branches_list = plainFilenamesIn(BRANCH_DIR);
+        System.out.println("==== Branches ===");
+        System.out.println("*" + cur_branch);
+        for (String branch_name : branches_list) {
+            if (branch_name.equals(cur_branch)) {
+                continue;
+            }
+            System.out.println(branch_name);
+        }
+        Stage add_stage = readAddStage();
+        Stage remove_stage = readRemoveStage();
+        // === Staged Files ===
+        List<Blob> StagedBlobs = add_stage.getBlobList();
+        System.out.println("=== Staged Files ===");
+        for (Blob blob : StagedBlobs) {
+            System.out.println(blob.toString());
+        }
+        // ==== Removed Files ===
+        List<Blob> RemobedBlobs = remove_stage.getBlobList();
+        System.out.println("==== Removed Files ===");
+        for (Blob blob : RemobedBlobs) {
+            System.out.println(blob.toString());
+        }
     }
 
     /** Usages:
@@ -310,7 +379,44 @@ public class Repository {
      *  2.checkout [commit id] -- [file name]
      *  3.checkout [branch name]
      * */
-    public static void checkout() {
+
+    /** Takes the version of the file as it exists in the head commit and puts it in the working directory,
+     *  overwriting the version of the file that’s already there if there is one. The new version of the file is not staged.
+     */
+    public static void checkoutFromHEAD(String file_name) {
+        Commit cur_commit = readCurCommit();
+        checkoutFromCommit(cur_commit.getCommit_id(), file_name);
+    }
+
+    /** Takes the version of the file as it exists in the commit with the given id, and puts it in the working directory,
+     *  overwriting the version of the file that’s already there if there is one. The new version of the file is not staged.
+     */
+    public static void checkoutFromCommit(String commit_id, String file_name) {
+        Commit checkedCommit = fromFile(commit_id);
+        List<Blob> blobList = checkedCommit.getBlobList();
+        for (Blob blob : blobList) {
+            if (blob.getFileName().equals(file_name)) {
+                writeBlobContentsIntoCWD(blob);         // deal with failure case "No commit with that id exists".
+                break;
+            }
+        }
+        exit("No commit with that id exists.");
+    }
+
+    /** Takes all files in the commit at the head of the given branch, and puts them in the working directory,
+     *  overwriting the versions of the files that are already there if they exist. Also, at the end of this command,
+     *  the given branch will now be considered the current branch (HEAD).
+     *  Any files that are tracked in the current branch but are not present in the checked-out branch are deleted.
+     *  The staging area is cleared, unless the checked-out branch is the current branch (see Failure cases below).
+     */
+    public static void checkoutBranch(String branch_name) {
+
+    }
+
+    private static void writeBlobContentsIntoCWD(Blob blob) {
+        File fileName = join(CWD, blob.getFileName());
+        byte[] fileContent = blob.getFileContents();
+        writeContents(fileName, new String(fileContent, StandardCharsets.UTF_8));
 
     }
 
@@ -322,7 +428,12 @@ public class Repository {
      *  Before you ever call branch, your code should be running with a default branch called “master”.
      * */
     public static void branch(String branch_name) {
-
+        String cur_commit_id = readCurCommit().getCommit_id();
+        File new_branch = join(BRANCH_DIR, branch_name);
+        if (new_branch.exists()) {
+            exit("A branch with that name already exists.");
+        }
+        writeContents(new_branch, cur_commit_id);
     }
 
     /** rm-branch [branch name]
@@ -331,7 +442,18 @@ public class Repository {
      */
 
     public static void rm_branch(String branch_name) {
-
+        String cur_branch = readContentsAsString(BRANCH);
+        if (branch_name.equals(cur_branch)) {
+            exit("Cannot remove the current branch.");
+        }
+        List<String> branches = plainFilenamesIn(BRANCH_DIR);
+        for (String branch : branches) {
+            if (branch.equals(branch_name)) {
+                File branch_rm = join(BRANCH_DIR, branch_name);
+                restrictedDelete(branch_rm);
+            }
+        }
+        exit("A branch with that name does not exist.");
     }
 
     /** reset [commit id]
@@ -342,8 +464,50 @@ public class Repository {
      *  The command is essentially checkout of an arbitrary commit that also changes the current branch head.
      */
     public static void reset(String commit_id) {
-
+        if (!checkIfFilesTracked()) {
+            exit("There is an untracked file in the way; delete it, or add and commit it first.");
+        }
+        clearCWD();
+        Commit checkedCommit = fromFile(commit_id);
+        List<Blob> checkedBlobList = checkedCommit.getBlobList();
+        for (Blob blob : checkedBlobList) {
+            checkoutFromCommit(commit_id, blob.getFileName());
+        }
+        Branch.updateCurBranch(commit_id);
+        clearStage();
     }
+
+    /** check stage areas , Blob_DIR and CWD, if any file in CWD isn't in Blob_DIR or stage ares, return false.
+     * */
+    private static boolean checkIfFilesTracked () {
+        File[] allCWDFiles = CWD.listFiles();
+        read
+        for (File file : allCWDFiles) {
+            Blob blob = new Blob(file);
+
+        }
+    }
+
+    private static void clearCWD() {
+        File[] allCWDFiles = CWD.listFiles();
+        if (allCWDFiles != null) {
+            for (File file : allCWDFiles) {
+                restrictedDelete(file);
+            }
+        }
+    }
+
+
+    private static void clearStage() {
+        Stage addStage = readAddStage();
+        Stage removeStage = readRemoveStage();
+        addStage.clear();
+        removeStage.clear();
+        addStage.saveAddStage();
+        removeStage.saveRemoveStage();
+    }
+
+
 
     /** merge [branch name]
      *  Merges files from the given branch into the current branch. This method is a bit complicated,

@@ -4,7 +4,6 @@ package gitlet;
 
 import static gitlet.Repository.*;
 import static gitlet.Utils.*;
-import gitlet.Repository.*;
 import java.io.File;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -95,6 +94,9 @@ public class Commit implements Serializable {
     // get a commit object from commit_id
     public static Commit fromFile(String commitId) {
         File commitFile = join(COMMIT_DIR, commitId);
+        if (!commitFile.exists()) {
+            exit("No commit with that id exists.");
+        }
         return readObject(commitFile, Commit.class);
     }
 
@@ -104,8 +106,6 @@ public class Commit implements Serializable {
         return parents;
     }
 
-
-
     public Map<String, String> getPathToBlobID() {
         return pathToBlobID;
     }
@@ -113,12 +113,20 @@ public class Commit implements Serializable {
     public String getCommit_id() {
         return commit_id;
     }
-    public  List<String> update_parents() {
-        String update_id =  from_Head();
-        parents.add(update_id);
-        return parents;
+
+    public String getMessage() {
+        return message;
     }
 
+    public List<Blob> getBlobList() {
+        List<Blob> blobList = new LinkedList<>();
+        for (String path : pathToBlobID.keySet()) {
+            String blob_id = pathToBlobID.get(path);
+            Blob blob = Stage.getBlobByID(blob_id);
+            blobList.add(blob);
+        }
+        return blobList;
+    }
 
 
     // a helper method to make a timestamp
@@ -127,6 +135,19 @@ public class Commit implements Serializable {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z").withZone(ZoneId.systemDefault());
         String timestamp = now.format(formatter);
         return timestamp;
+    }
+    /** print as following format
+     * ===
+     * commit a0da1ea5a15ab613bf9961fd86f010cf74c7ee48
+     * Date: Thu Nov 9 20:00:05 2017 -0800
+     * A commit message.
+     */
+
+    public void print() {
+        System.out.println("===");
+        System.out.println("commit " + commit_id);
+        System.out.println("Date: " + timestamp);
+        System.out.println(message);
     }
 
 

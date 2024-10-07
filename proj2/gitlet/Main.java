@@ -2,6 +2,7 @@ package gitlet;
 
 import java.io.IOException;
 import static gitlet.Utils.*;
+import static gitlet.Repository.*;
 
 
 /** Driver class for Gitlet, a subset of the Git version-control system.
@@ -68,11 +69,13 @@ public class Main {
                     break;
                 case "add":
                     validateNumArgs(firstArg, args, 2);
+                    checkIfInited();
                     String file_name = args[1];
                     Repository.add(file_name);
                     break;
                 case "commit":
                     validateNumArgs(firstArg, args, 2);
+                    checkIfInited();
                     String message = args[1];
                     if (message.length() == 0) {
                         exit("Please enter a commit message.");
@@ -81,23 +84,28 @@ public class Main {
                     break;
                 case "rm":
                     validateNumArgs(firstArg, args, 2);
+                    checkIfInited();
                     String fileName = args[1];
                     Repository.rm(fileName);
                     break;
                 case "log":
                     validateNumArgs(firstArg, args, 1);
+                    checkIfInited();
                     Repository.log();
                     break;
                 case "global-log":
                     validateNumArgs(firstArg, args, 1);
+                    checkIfInited();
                     Repository.global_log();
                     break;
                 case "find":
                     validateNumArgs(firstArg, args, 2);
+                    checkIfInited();
                     Repository.find(args[1]);
                     break;
                 case "status":
                     validateNumArgs(firstArg, args, 1);
+                    checkIfInited();
                     Repository.status();
                     break;
                 case "checkout":
@@ -106,18 +114,22 @@ public class Main {
                     break;
                 case "branch":
                     validateNumArgs(firstArg, args, 2);
+                    checkIfInited();
                     Repository.branch(args[1]);
                     break;
                 case "rm_branch":
                     validateNumArgs(firstArg, args, 2);
+                    checkIfInited();
                     Repository.rm_branch(args[1]);
                     break;
                 case "reset":
                     validateNumArgs(firstArg, args, 2);
+                    checkIfInited();
                     Repository.reset(args[1]);
                     break;
                 case "merge":
                     validateNumArgs(firstArg, args, 2);
+                    checkIfInited();
                     Repository.merge(args[1]);
                     break;
                 // TODO: FILL THE REST IN

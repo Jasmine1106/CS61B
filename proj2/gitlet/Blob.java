@@ -1,5 +1,7 @@
 package gitlet;
 
+import static gitlet.Utils.*;
+import  static gitlet.Repository.BLOB_DIR;
 import java.io.Serializable;
 import java.io.File;
 import java.util.Map;
@@ -16,21 +18,24 @@ public class Blob implements Serializable {
      */
     private File source;
     private String blob_id;
-    private byte[] file_contents;
+    private byte[] fileContents;
+    private String filePath;
+    private File blobSavedFile;
     // a map that keep track of blob_id to file's path
     private Map<String, String> blob_IdToPath = new TreeMap<>();
 
     // creatr a new blob object, and add its blob_id and path mapping relationship into blob_IdToPath
     public Blob(File source_file){
         this.source = source_file;
-        this.file_contents = Utils.readContents(source_file);
-        String file_path = source_file.getPath();
-        this.blob_id = Utils.sha1(file_contents, file_path);
+        this.fileContents = Utils.readContents(source_file);
+        this.filePath = source_file.getPath();
+        this.blob_id = Utils.sha1(fileContents, filePath);
+        this.blobSavedFile = generateBlobSavedName();
     }
 
 
-    public void saveTo(File filetoSave){
-        Utils.writeObject(filetoSave, this);
+    public void save(){
+        Utils.writeObject(blobSavedFile, this);
     }
 
     public String get_BlobId() {
@@ -39,6 +44,22 @@ public class Blob implements Serializable {
 
     public String get_BlobPath() {
         return this.source.getPath();
+    }
+
+    public String getFileName() {
+        return source.getName();
+    }
+
+    public File getSourceFile() {
+        return source;
+    }
+
+    public byte[] getFileContents() {
+        return fileContents;
+    }
+
+    private  File generateBlobSavedName(){
+        return join(BLOB_DIR, blob_id);
     }
 
 }
