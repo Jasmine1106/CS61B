@@ -297,8 +297,8 @@ public class Repository {
         Commit cur_commit = readCurCommit();
         List<String> history = cur_commit.getParents();
         cur_commit.print();
-        while (history.size() != 0) {
-            String parent_id = history.getLast();
+        while (!history.isEmpty()) {
+            String parent_id = history.get(history.size() - 1);
             Commit parent_commit = fromFile(parent_id);
             parent_commit.print();
             history = parent_commit.getParents();
