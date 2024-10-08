@@ -5,10 +5,14 @@ import static gitlet.Utils.*;
 import java.io.File;
 import java.io.Serializable;
 import java.util.*;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.LinkedList;
+
 
 
 /** a class that represents the stage for add and rm.
- *
  */
 public class Stage  implements Serializable {
     // a map that keeps track of file that add into ADDITION, key is blob_id, value is path.

@@ -8,11 +8,9 @@ import java.io.File;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 
 /** Represents a gitlet commit object.
@@ -61,9 +59,9 @@ public class Commit implements Serializable {
     // initial commit
     public Commit() {
         this.message = "initial commit";
-        this.parents = new LinkedList<>();
+        this.parents = new ArrayList<>();
         this.pathToBlobID = new TreeMap<>();
-        this.timestamp = "00:00:00 UTC, Thursday, 1 January 1970";
+        this.timestamp = makeInitialTimestamp();
         this.commit_id = generateID();
         this.commit_file = generate_commit_file();
         save_HEAD(this.commit_id);      // write this commit_id into HEAD
@@ -71,7 +69,9 @@ public class Commit implements Serializable {
 
     // generate a commit_id
     private String generateID() {
-        return Utils.sha1(timestamp, message, parents.toString(), pathToBlobID.toString());
+        String patentsString = parents != null ? parents.toString() : "" ;
+        String pathToBlobIDString = pathToBlobID != null ? pathToBlobID.toString() : "" ;
+        return Utils.sha1(timestamp, message, patentsString, pathToBlobIDString);
     }
 
     private File generate_commit_file() {
@@ -128,15 +128,30 @@ public class Commit implements Serializable {
         return blobList;
     }
 
-
-
-    // a helper method to make a timestamp
+    // current timestamp
     public static String makeTimestamp() {
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z").withZone(ZoneId.systemDefault());
-        String timestamp = now.format(formatter);
-        return timestamp;
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
+        return formatTimestamp(now);
     }
+
+    // initial timestamp
+    public static String makeInitialTimestamp() {
+        Date date = new Date(0);
+        ZonedDateTime epoch = ZonedDateTime.ofInstant(new java.util.Date(0).toInstant(), ZoneId.systemDefault());
+        return formatTimestamp(epoch);
+    }
+
+    /** @source: ChatGPT
+     * problem: My output is  Thu Jan 01 08:00:00 1970 +08:00,
+     * but need  Thu Jan 01 08:00:00 1970 +0800
+     * ask GPT how to get rid of : between 08:00
+     */
+    private static String formatTimestamp(ZonedDateTime dateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z", Locale.ENGLISH);
+        String formatted = dateTime.format(formatter);
+        return formatted.replaceAll("([+-]\\d{2}):?(\\d{2})", "$1$2");
+    }
+
     /** print as following format
      * ===
      * commit a0da1ea5a15ab613bf9961fd86f010cf74c7ee48
@@ -149,6 +164,7 @@ public class Commit implements Serializable {
         System.out.println("commit " + commit_id);
         System.out.println("Date: " + timestamp);
         System.out.println(message);
+        System.out.println();
     }
 
 

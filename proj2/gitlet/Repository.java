@@ -127,11 +127,18 @@ public class Repository {
      */
     // a private method to search file recursively
     public static void add(String file_name) {
+        add_stage = readAddStage();
+        remove_stage = readRemoveStage();
         File source_file = SearchFile(CWD, file_name);
         if (source_file == null) {
             exit("File does not exist.");
         }
+        // System.out.println("Adding file: " + source_file.getAbsolutePath()); // 调试输出
+
         Blob blob = new Blob(source_file);
+        blob.save();
+        // System.out.println("Blob ID: " + blob.get_BlobId()); // 调试输出
+        // System.out.println("Blob Path: " + blob.get_BlobPath()); // 调试输出
         if (remove_stage.ifContains(blob) ) {
             remove_stage.delete(blob);
         }
@@ -156,6 +163,8 @@ public class Repository {
      *
      */
     public static void commit(String message) {
+        add_stage = readAddStage();
+        remove_stage = readRemoveStage();
         if (add_stage.isEmpty() && remove_stage.isEmpty()) {
             exit("No changes added to the commit.");
         }
@@ -190,14 +199,14 @@ public class Repository {
     }
 
     private static Stage readAddStage() {
-        if (!ADDITION.exists()) {
+        if (ADDITION.length() == 0) {
             return new Stage();
         }
         return readObject(ADDITION, Stage.class);
     }
 
     private static Stage readRemoveStage() {
-        if (!REMOVAL.exists()) {
+        if (REMOVAL.length() == 0) {
             return new Stage();
         }
         return readObject(REMOVAL, Stage.class);
@@ -370,8 +379,16 @@ public class Repository {
         add_stage.printBlobs();;
         System.out.println("==== Removed Files ===");
         remove_stage.printBlobs();
-
-        List<>
+        System.out.println("=== Modifications Not Staged For Commit ===");
+        List<String> modNotStage = calModifiedButNotStage();
+        for (String file : modNotStage) {
+            System.out.println(file);
+        }
+        System.out.println("=== Untracked Files ===");
+        List<String> untracked = calUntracked();
+        for (String file : untracked) {
+            System.out.println(file);
+        }
     }
 
     /** Four cases:
@@ -383,31 +400,30 @@ public class Repository {
      *  */
     public static List<String> calModifiedButNotStage() {
         List<String> modifiedNotStageFiles = new ArrayList<>();
-
         Commit cur_commit = readCurCommit();
         Stage addStage = readAddStage();
         Stage removeStage = readRemoveStage();
-        List<Blob> curCommitBlobList = cur_commit.getBlobList();
-        List<Blob> addStagedBlobList = addStage.getBlobList();
-        List<Blob> removeStageBlobList = removeStage.getBlobList();
-        File[] CWDFiles = CWD.listFiles();
-        for (Blob blob: curCommitBlobList) {
+        Set<Blob> curCommitBlobSet = new HashSet<>(cur_commit.getBlobList());
+        Set<Blob> addStagedBlobSet = new HashSet<>(addStage.getBlobList());
+        Set<Blob> removeStageBlobSet = new HashSet<>(removeStage.getBlobList());
+
+        for (Blob blob: curCommitBlobSet) {
             File fileInCWD = join(CWD, blob.getFileName());
             // 1. search Blob_dir, uneaqul version in CWD, not in staged(modified)
-            if (!addStagedBlobList.contains(blob) && !removeStageBlobList.contains(blob)) {
+            if (!addStagedBlobSet.contains(blob) && !removeStageBlobSet.contains(blob)) {
                     byte[] CWDFileContents = readContents(fileInCWD);
                     if (!Arrays.equals(CWDFileContents, blob.getFileContents())) {
                          modifiedNotStageFiles.add(blob.getFileName() + "(modified)");
                     }
                 }
             // 4. Blob_dir, not in CWD, not staged for removal(deleted)
-            if (!removeStageBlobList.contains(blob) && !fileInCWD.exists()) {
+            if (!removeStageBlobSet.contains(blob) && !fileInCWD.exists()) {
                 modifiedNotStageFiles.add(blob.getFileName() + "(deleted)");
             }
         }
         // 2. staged for addition, in CWD, but uneaqul version(modified)
         // 3. staged for addition, but not in CWD(deleted)
-        for (Blob blob : addStagedBlobList) {
+        for (Blob blob : addStagedBlobSet) {
             File fileInCWD = join(CWD, blob.getFileName());
             if (fileInCWD.exists()) {
                 byte[] CWDFileContents = readContents(fileInCWD);
@@ -420,6 +436,30 @@ public class Repository {
         }
         Collections.sort(modifiedNotStageFiles);
         return modifiedNotStageFiles;
+    }
+
+    /** for files present in the working directory but neither staged for addition nor tracked.
+     *  This includes files that have been staged for removal, but then re-created without Gitlet’s knowledge. */
+    public static List<String> calUntracked() {
+        List<String> untrackedFiles = new ArrayList<>();
+        Commit cur_commit = readCurCommit();
+        Stage addStage = readAddStage();
+        Stage removeStage = readRemoveStage();
+        Set<Blob> curCommitBlobsSet = new HashSet<>(cur_commit.getBlobList());
+        Set<Blob> addStageBlobSset = new HashSet<>(addStage.getBlobList());
+        Set<Blob> removeStageBlobsSet = new HashSet<>(removeStage.getBlobList());
+        File[] cwdFiles = CWD.listFiles();
+
+        if (cwdFiles != null) {
+            for (File file : cwdFiles) {
+                Blob blob = new Blob(file);
+                if (!curCommitBlobsSet.contains(blob) && !addStageBlobSset.contains(blob) && !removeStageBlobsSet.contains(blob)) {
+                    untrackedFiles.add(file.getName());
+                }
+            }
+        }
+        Collections.sort(untrackedFiles);
+        return untrackedFiles;
     }
 
 
@@ -497,20 +537,15 @@ public class Repository {
         return readContentsAsString(BRANCH);
     }
 
-
     /** TODO:check stage areas , Blob_DIR and CWD, if any file in CWD isn't in Blob_DIR or stage ares, return false.
      * */
     private static boolean checkIfFilesTracked () {
-        File[] allCWDFiles = CWD.listFiles();
-        for (File file : allCWDFiles) {
-            Blob blob = new Blob(file);
-            if (!blob.getBlobSavedFile().exists()) {
-                if (!checkBlobStaged()) {
-                    return false;
-                }
-            }
-
+        List<String> untrackedList = new ArrayList<>() ;
+        untrackedList = calUntracked();
+        if (untrackedList.isEmpty()) {
+            return false;
         }
+        return true;
     }
 
     private static void clearCWD() {
