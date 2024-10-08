@@ -74,5 +74,12 @@ public class Stage  implements Serializable {
         return BlobIdToPath.isEmpty();
     }
 
+    public void printBlobs() {
+        List<Blob> StagedBlobs = this.getBlobList();
+        for (Blob blob : StagedBlobs) {
+            System.out.println(blob.toString());
+        }
+    }
+
 
 }

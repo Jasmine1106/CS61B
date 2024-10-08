@@ -4,14 +4,13 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import static gitlet.Utils.*;
 import static gitlet.Commit.*;
-
+import java.util.Collection;
 
 
 
@@ -345,6 +344,13 @@ public class Repository {
      * === Removed Files ===
      * goodbye.txt
      *
+     * === Modifications Not Staged For Commit ===
+     * junk.txt (deleted)
+     * wug3.txt (modified)
+     *
+     * === Untracked Files ===
+     * random.stuff
+     *
      * */
     public static void status() {
         // === branches ===
@@ -360,19 +366,62 @@ public class Repository {
         }
         Stage add_stage = readAddStage();
         Stage remove_stage = readRemoveStage();
-        // === Staged Files ===
-        List<Blob> StagedBlobs = add_stage.getBlobList();
         System.out.println("=== Staged Files ===");
-        for (Blob blob : StagedBlobs) {
-            System.out.println(blob.toString());
-        }
-        // ==== Removed Files ===
-        List<Blob> RemobedBlobs = remove_stage.getBlobList();
+        add_stage.printBlobs();;
         System.out.println("==== Removed Files ===");
-        for (Blob blob : RemobedBlobs) {
-            System.out.println(blob.toString());
-        }
+        remove_stage.printBlobs();
+
+        List<>
     }
+
+    /** Four cases:
+     *  Tracked in the current commit, changed in the working directory, but not staged; or
+     *  Staged for addition, but with different contents than in the working directory; or
+     *  Staged for addition, but deleted in the working directory; or
+     *  Not staged for removal, but tracked in the current commit and deleted from the working directory.
+     *
+     *  */
+    public static List<String> calModifiedButNotStage() {
+        List<String> modifiedNotStageFiles = new ArrayList<>();
+
+        Commit cur_commit = readCurCommit();
+        Stage addStage = readAddStage();
+        Stage removeStage = readRemoveStage();
+        List<Blob> curCommitBlobList = cur_commit.getBlobList();
+        List<Blob> addStagedBlobList = addStage.getBlobList();
+        List<Blob> removeStageBlobList = removeStage.getBlobList();
+        File[] CWDFiles = CWD.listFiles();
+        for (Blob blob: curCommitBlobList) {
+            File fileInCWD = join(CWD, blob.getFileName());
+            // 1. search Blob_dir, uneaqul version in CWD, not in staged(modified)
+            if (!addStagedBlobList.contains(blob) && !removeStageBlobList.contains(blob)) {
+                    byte[] CWDFileContents = readContents(fileInCWD);
+                    if (!Arrays.equals(CWDFileContents, blob.getFileContents())) {
+                         modifiedNotStageFiles.add(blob.getFileName() + "(modified)");
+                    }
+                }
+            // 4. Blob_dir, not in CWD, not staged for removal(deleted)
+            if (!removeStageBlobList.contains(blob) && !fileInCWD.exists()) {
+                modifiedNotStageFiles.add(blob.getFileName() + "(deleted)");
+            }
+        }
+        // 2. staged for addition, in CWD, but uneaqul version(modified)
+        // 3. staged for addition, but not in CWD(deleted)
+        for (Blob blob : addStagedBlobList) {
+            File fileInCWD = join(CWD, blob.getFileName());
+            if (fileInCWD.exists()) {
+                byte[] CWDFileContents = readContents(fileInCWD);
+                if (!Arrays.equals(CWDFileContents, blob.getFileContents())) {
+                    modifiedNotStageFiles.add(blob.getFileName() + "(modified)");
+                }
+            } else {
+                modifiedNotStageFiles.add(blob.getFileName() + "(deleted)");
+            }
+        }
+        Collections.sort(modifiedNotStageFiles);
+        return modifiedNotStageFiles;
+    }
+
 
     /** Usages:
      *  1.checkout -- [file name]
@@ -437,7 +486,7 @@ public class Repository {
 
         Branch.updateCurBranch(commit_id);
         updateHEAD(commit_id);
-        clearStage();
+        clearStage();        // already saved
     }
 
     private static void updateHEAD(String commit_id) {
