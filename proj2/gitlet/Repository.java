@@ -375,20 +375,34 @@ public class Repository {
         }
         Stage add_stage = readAddStage();
         Stage remove_stage = readRemoveStage();
+        System.out.println();
         System.out.println("=== Staged Files ===");
         add_stage.printBlobs();;
+        System.out.println();
         System.out.println("==== Removed Files ===");
         remove_stage.printBlobs();
+        System.out.println();
         System.out.println("=== Modifications Not Staged For Commit ===");
         List<String> modNotStage = calModifiedButNotStage();
         for (String file : modNotStage) {
             System.out.println(file);
         }
+        System.out.println();
         System.out.println("=== Untracked Files ===");
+        /** TODO BUG:
+         * java.lang.IllegalArgumentException: must be a normal file
+         * - 	at gitlet.Utils.readContents(Utils.java:103)
+         * - 	at gitlet.Blob.<init>(Blob.java:30)
+         * - 	at gitlet.Repository.calUntracked(Repository.java:455)
+         * - 	at gitlet.Repository.status(Repository.java:388)
+         * - 	at gitlet.Main.main(Main.java:109)
+         * - 	at AGTester.main(AGTester.java:90)
+         */
         List<String> untracked = calUntracked();
         for (String file : untracked) {
             System.out.println(file);
         }
+        System.out.println();
     }
 
     /** Four cases:

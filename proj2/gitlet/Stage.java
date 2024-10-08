@@ -81,7 +81,7 @@ public class Stage  implements Serializable {
     public void printBlobs() {
         List<Blob> StagedBlobs = this.getBlobList();
         for (Blob blob : StagedBlobs) {
-            System.out.println(blob.toString());
+            System.out.println(blob.getFileName());
         }
     }
 
