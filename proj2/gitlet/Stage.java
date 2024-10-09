@@ -37,6 +37,17 @@ public class Stage  implements Serializable {
         return BlobList;
     }
 
+    // get a list of blobs name in the stage area
+    public List<String> getBlobNameList() {
+        String blobName;
+        List<String> BlobNameList = new LinkedList<>();
+        for (String blob_id : BlobIdToPath.keySet()) {
+            blobName = getBlobByID(blob_id).getFileName();
+            BlobNameList.add(blobName);
+        }
+        return BlobNameList;
+    }
+
     // retrive a blob by its id
     public static Blob getBlobByID(String blob_id) {
         File Blob_file = join(Repository.BLOB_DIR, blob_id);
@@ -78,10 +89,12 @@ public class Stage  implements Serializable {
         return BlobIdToPath.isEmpty();
     }
 
-    public void printBlobs() {
-        List<Blob> StagedBlobs = this.getBlobList();
-        for (Blob blob : StagedBlobs) {
-            System.out.println(blob.getFileName());
+    // Dicitionaries order
+    public void printBlobsName() {
+        List<String> StagedBlobs = this.getBlobNameList();
+        Collections.sort(StagedBlobs);
+        for (String blobName : StagedBlobs) {
+            System.out.println(blobName);
         }
     }
 

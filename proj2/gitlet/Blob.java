@@ -66,4 +66,21 @@ public class Blob implements Serializable {
         return join(BLOB_DIR, blob_id);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof Blob)) {
+            return false;
+        }
+        Blob other = (Blob) obj;
+        return this.blob_id.equals(other.blob_id);
+    }
+
+    @Override
+    public int hashCode() {
+        return blob_id.hashCode();
+    }
+
 }

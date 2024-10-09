@@ -263,14 +263,17 @@ public class Repository {
      * */
 
     public static void rm(String file_name)  {
-        File rm_file = new File(file_name);
+        File rm_file = join(CWD, file_name);
         Blob rm_blob = new Blob(rm_file);
         Commit cur_commit = readCurCommit();
+        // update stage area
+        add_stage = readAddStage();
+        remove_stage = readRemoveStage();
         // 1.check Addition folder
         if (add_stage.ifContains(rm_blob)) {
             add_stage.delete(rm_blob);
         }
-        // 2.check current commit folder
+        // 2.check current commit folder if file_name is tracked
         else if (cur_commit.getPathToBlobID().containsKey(rm_blob.get_BlobPath())) {
             remove_stage.addBlobInMap(rm_blob.get_BlobId(), rm_blob.get_BlobPath());
             File cwd_rm_file = SearchFile(CWD, file_name);
@@ -377,10 +380,10 @@ public class Repository {
         Stage remove_stage = readRemoveStage();
         System.out.println();
         System.out.println("=== Staged Files ===");
-        add_stage.printBlobs();;
+        add_stage.printBlobsName();
         System.out.println();
         System.out.println("==== Removed Files ===");
-        remove_stage.printBlobs();
+        remove_stage.printBlobsName();
         System.out.println();
         System.out.println("=== Modifications Not Staged For Commit ===");
         List<String> modNotStage = calModifiedButNotStage();
@@ -389,15 +392,6 @@ public class Repository {
         }
         System.out.println();
         System.out.println("=== Untracked Files ===");
-        /** TODO BUG:
-         * java.lang.IllegalArgumentException: must be a normal file
-         * - 	at gitlet.Utils.readContents(Utils.java:103)
-         * - 	at gitlet.Blob.<init>(Blob.java:30)
-         * - 	at gitlet.Repository.calUntracked(Repository.java:455)
-         * - 	at gitlet.Repository.status(Repository.java:388)
-         * - 	at gitlet.Main.main(Main.java:109)
-         * - 	at AGTester.main(AGTester.java:90)
-         */
         List<String> untracked = calUntracked();
         for (String file : untracked) {
             System.out.println(file);
@@ -460,13 +454,13 @@ public class Repository {
         Stage addStage = readAddStage();
         Stage removeStage = readRemoveStage();
         Set<Blob> curCommitBlobsSet = new HashSet<>(cur_commit.getBlobList());
-        Set<Blob> addStageBlobSset = new HashSet<>(addStage.getBlobList());
+        List<Blob> addStageBlobSset = addStage.getBlobList();
         Set<Blob> removeStageBlobsSet = new HashSet<>(removeStage.getBlobList());
         File[] cwdFiles = CWD.listFiles();
 
         if (cwdFiles != null) {
             for (File file : cwdFiles) {
-                if (file.isFile()) { // 只处理普通文件
+                if (file.isFile()) { // check file isn't a directory or other special file
                     Blob blob = new Blob(file);
                     if (!curCommitBlobsSet.contains(blob) && !addStageBlobSset.contains(blob) && !removeStageBlobsSet.contains(blob)) {
                         untrackedFiles.add(file.getName());
