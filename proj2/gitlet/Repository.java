@@ -121,28 +121,28 @@ public class Repository {
      *  Adds a copy of the file as it currently exists to the staging area.The staging area should be somewhere in .gitlet.
      *  If the current working version of the file is identical to the version in the current commit, do not stage it to be added,
      *  and remove it from the staging area if it is already there.
-     * Special Case:
-     *   .file_version is identical to current commit, don't add
-     *   .file is in remove_stage, delete it
      */
     // a private method to search file recursively
     public static void add(String file_name) {
         add_stage = readAddStage();
         remove_stage = readRemoveStage();
+        Commit curCommit = readCurCommit();
         File source_file = SearchFile(CWD, file_name);
         if (source_file == null) {
             exit("File does not exist.");
         }
-        // System.out.println("Adding file: " + source_file.getAbsolutePath()); // 调试输出
-
         Blob blob = new Blob(source_file);
         blob.save();
         // System.out.println("Blob ID: " + blob.get_BlobId()); // 调试输出
         // System.out.println("Blob Path: " + blob.get_BlobPath()); // 调试输出
-        if (remove_stage.ifContains(blob) ) {
-            remove_stage.delete(blob);
+        // can't add trcked file
+        if (!curCommit.getBlobList().contains(blob)) {
+            add_stage.addBlobInMap(blob.get_BlobId(), blob.get_BlobPath());
         }
-        add_stage.addBlobInMap(blob.get_BlobId(), blob.get_BlobPath());
+        else if (remove_stage.ifContains(blob) ) {
+            remove_stage.delete(blob);
+            add_stage.addBlobInMap(blob.get_BlobId(), blob.get_BlobPath());
+        }
         // save
         add_stage.saveAddStage();
         remove_stage.saveRemoveStage();
@@ -269,21 +269,20 @@ public class Repository {
         // update stage area
         add_stage = readAddStage();
         remove_stage = readRemoveStage();
+        File cwd_rm_file = SearchFile(CWD, file_name);
         // 1.check Addition folder
         if (add_stage.ifContains(rm_blob)) {
             add_stage.delete(rm_blob);
         }
-        // 2.check current commit folder if file_name is tracked
+        // 2.check  file_name is tracked by current commit
         else if (cur_commit.getPathToBlobID().containsKey(rm_blob.get_BlobPath())) {
             remove_stage.addBlobInMap(rm_blob.get_BlobId(), rm_blob.get_BlobPath());
-            File cwd_rm_file = SearchFile(CWD, file_name);
-            if (cwd_rm_file != null) {
-                cwd_rm_file.delete();
-            }
         }
         else {
-            exit("File not found.");
+            exit("No reason to remove the file..");
         }
+        //anyway, remove file if it is in CWD
+        if (cwd_rm_file != null) { cwd_rm_file.delete(); }
         // save
         add_stage.saveAddStage();
         remove_stage.saveRemoveStage();
@@ -454,7 +453,7 @@ public class Repository {
         Stage addStage = readAddStage();
         Stage removeStage = readRemoveStage();
         Set<Blob> curCommitBlobsSet = new HashSet<>(cur_commit.getBlobList());
-        List<Blob> addStageBlobSset = addStage.getBlobList();
+        Set<Blob> addStageBlobSset = new HashSet<>(addStage.getBlobList());
         Set<Blob> removeStageBlobsSet = new HashSet<>(removeStage.getBlobList());
         File[] cwdFiles = CWD.listFiles();
 
