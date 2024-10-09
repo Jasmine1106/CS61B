@@ -367,7 +367,7 @@ public class Repository {
         // === branches ===
         String cur_branch = readContentsAsString(BRANCH);
         List<String> branches_list = plainFilenamesIn(BRANCH_DIR);
-        System.out.println("==== Branches ===");
+        System.out.println("=== Branches ===");
         System.out.println("*" + cur_branch);
         for (String branch_name : branches_list) {
             if (branch_name.equals(cur_branch)) {
@@ -381,7 +381,7 @@ public class Repository {
         System.out.println("=== Staged Files ===");
         add_stage.printBlobsName();
         System.out.println();
-        System.out.println("==== Removed Files ===");
+        System.out.println("=== Removed Files ===");
         remove_stage.printBlobsName();
         System.out.println();
         System.out.println("=== Modifications Not Staged For Commit ===");
