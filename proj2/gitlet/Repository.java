@@ -132,7 +132,6 @@ public class Repository {
             exit("File does not exist.");
         }
         Blob blob = new Blob(source_file);
-        blob.save();
         // System.out.println("Blob ID: " + blob.get_BlobId()); // 调试输出
         // System.out.println("Blob Path: " + blob.get_BlobPath()); // 调试输出
         // can't add trcked file
@@ -141,9 +140,9 @@ public class Repository {
         }
         else if (remove_stage.ifContains(blob) ) {
             remove_stage.delete(blob);
-            add_stage.addBlobInMap(blob.get_BlobId(), blob.get_BlobPath());
         }
         // save
+        blob.save();
         add_stage.saveAddStage();
         remove_stage.saveRemoveStage();
     }
@@ -274,7 +273,7 @@ public class Repository {
         if (add_stage.ifContains(rm_blob)) {
             add_stage.delete(rm_blob);
         }
-        // 2.check  file_name is tracked by current commit
+        // 2.check file_name is tracked by current commit
         else if (cur_commit.getPathToBlobID().containsKey(rm_blob.get_BlobPath())) {
             remove_stage.addBlobInMap(rm_blob.get_BlobId(), rm_blob.get_BlobPath());
         }
