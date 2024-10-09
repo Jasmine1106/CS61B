@@ -496,14 +496,21 @@ public class Repository {
      */
     public static void checkoutFromCommit(String commit_id, String file_name) {
         Commit checkedCommit = fromFile(commit_id);
+        if (checkedCommit == null) {
+            exit("No commit with that id exists.");
+        }
         List<Blob> blobList = checkedCommit.getBlobList();
+        boolean ifFileFound = false;
         for (Blob blob : blobList) {
             if (blob.getFileName().equals(file_name)) {
-                writeBlobContentsIntoCWD(blob);         // deal with failure case "No commit with that id exists".
+                writeBlobContentsIntoCWD(blob);
+               ifFileFound = true;
                 break;
             }
         }
-        exit("No commit with that id exists.");
+        if (!ifFileFound) {
+            exit("File does not exist in that commit.");
+        }
     }
 
     /** Takes all files in the commit at the head of the given branch, and puts them in the working directory,

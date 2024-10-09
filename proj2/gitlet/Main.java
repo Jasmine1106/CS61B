@@ -109,8 +109,17 @@ public class Main {
                     Repository.status();
                     break;
                 case "checkout":
-                    // 需要处理 checkout 命令的不同情况
-                    // ...
+                    checkIfInited();
+                    // 3 cases of checkout
+                    if (args.length == 3 && args[1].equals("--")) { // checkout -- [file name]
+                        Repository.checkoutFromHEAD(args[2]);
+                    } else if (args.length == 4 && args[2].equals("--")) { // checkout [commit id] -- [file name]
+                        Repository.checkoutFromCommit(args[1], args[3]);
+                    } else if (args.length == 2) { // checkout [branch name]
+                        Repository.checkoutBranch(args[1]);
+                    } else {
+                        System.out.println("Invalid number of arguments for: checkout.");
+                    }
                     break;
                 case "branch":
                     validateNumArgs(firstArg, args, 2);
