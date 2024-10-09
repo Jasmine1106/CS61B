@@ -466,9 +466,11 @@ public class Repository {
 
         if (cwdFiles != null) {
             for (File file : cwdFiles) {
-                Blob blob = new Blob(file);
-                if (!curCommitBlobsSet.contains(blob) && !addStageBlobSset.contains(blob) && !removeStageBlobsSet.contains(blob)) {
-                    untrackedFiles.add(file.getName());
+                if (file.isFile()) { // 只处理普通文件
+                    Blob blob = new Blob(file);
+                    if (!curCommitBlobsSet.contains(blob) && !addStageBlobSset.contains(blob) && !removeStageBlobsSet.contains(blob)) {
+                        untrackedFiles.add(file.getName());
+                    }
                 }
             }
         }
