@@ -276,12 +276,12 @@ public class Repository {
         // 2.check file_name is tracked by current commit
         else if (cur_commit.getPathToBlobID().containsKey(rm_blob.get_BlobPath())) {
             remove_stage.addBlobInMap(rm_blob.get_BlobId(), rm_blob.get_BlobPath());
+            // remove file if it is in CWD
+            if (cwd_rm_file != null) { cwd_rm_file.delete(); }
         }
         else {
             exit("No reason to remove the file..");
         }
-        //anyway, remove file if it is in CWD
-        if (cwd_rm_file != null) { cwd_rm_file.delete(); }
         // save
         add_stage.saveAddStage();
         remove_stage.saveRemoveStage();
