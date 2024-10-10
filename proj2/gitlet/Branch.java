@@ -26,8 +26,8 @@ public class Branch {
     }
 
     // change commit_id in that branch file
-    public static void updateBranchPointer(File branch, String commit_id) {
-        writeContents(branch, commit_id);
+    public static void updateBranchPointer(File branch, String commitID) {
+        writeContents(branch, commitID);
     }
 
     public static void updateCurBranch(String commitID) {

@@ -504,16 +504,19 @@ public class Repository {
         // above is code is do some checking
         clearCWD();
         String commitID = readContentsAsString(branchFile);
-        Commit checkedCommit = fromFile(commitID);
-        List<Blob> checkedBlobList = checkedCommit.getBlobList();
-        for (Blob blob : checkedBlobList) {
-            writeBlobContentsIntoCWD(blob);
-        }
+        updateCWDFromCommit(commitID);
         Branch.updateCurBranch(commitID);
         updateHEAD(commitID);
         clearStage();        // already saved
     }
 
+    private static void updateCWDFromCommit(String commitID) {
+        Commit checkedCommit = fromFile(commitID);
+        List<Blob> checkedBlobList = checkedCommit.getBlobList();
+        for (Blob blob : checkedBlobList) {
+            writeBlobContentsIntoCWD(blob);
+        }
+    }
 
     private static void updateHEAD(String commit_id) {
         writeContents(HEAD, commit_id);
@@ -558,13 +561,13 @@ public class Repository {
      *  This command does NOT immediately switch to the newly created branch (just as in real Git).
      *  Before you ever call branch, your code should be running with a default branch called “master”.
      * */
-    public static void branch(String branch_name) {
+    public static void branch(String branchName) {
         String curCommitID = readCurCommit().getCommitID();
-        File new_branch = join(BRANCH_DIR, branch_name);
-        if (new_branch.exists()) {
+        File newBranch = join(BRANCH_DIR, branchName);
+        if (newBranch.exists()) {
             exit("A branch with that name already exists.");
         }
-        writeContents(new_branch, curCommitID);
+        writeContents(newBranch, curCommitID);
     }
 
     /** rm-branch [branch name]
@@ -573,11 +576,15 @@ public class Repository {
      */
 
     public static void rm_branch(String branchName) {
-        String cur_branch = readContentsAsString(BRANCH);
-        if (branchName.equals(cur_branch)) { exit("Cannot remove the current branch.");}
+        String curBranch = readContentsAsString(BRANCH);
+        if (branchName.equals(curBranch)) {
+            exit("Cannot remove the current branch.");
+        }
         File branchFile = Branch.getBranchFileByName(branchName);
-        if (branchFile == null) { exit("A branch with that name does not exist.");}
-        restrictedDelete(branchFile);
+        if (branchFile == null) {
+            exit("A branch with that name does not exist.");
+        }
+        branchFile.delete();
     }
 
     /** reset [commit id]
@@ -588,8 +595,14 @@ public class Repository {
      *  The command is essentially checkout of an arbitrary commit that also changes the current branch head.
      */
     public static void reset(String commitID) {
-
-
+        Commit checkedCommit = fromFile(commitID);
+        if (checkedCommit == null) {
+            exit("No commit with that id exists.");
+        }
+        clearCWD();
+        updateCWDFromCommit(commitID);
+        Branch.updateCurBranch(commitID);
+        clearStage();
     }
 
     /** merge [branch name]
