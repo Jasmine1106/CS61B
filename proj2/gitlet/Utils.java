@@ -240,10 +240,10 @@ class Utils {
         System.out.println();
     }
 
-    /** some statichelper mathod i wrote ---------------------------------------------------------------------------*/
+    /** some statichelper mathod i wrote ----*/
 
     // search file_name in director recursively ,return the file object ,or null if not found.
-    public static File searchFile(File directory, String file_name) {
+    public static File searchFile (File directory, String file_name) {
         File[] files = directory.listFiles();
         for (File file : files) {
             if (file.getName().equals(file_name)) {
@@ -256,20 +256,19 @@ class Utils {
         return null;
     }
 
-    public static void exit(String message, Object... args) {
+    public static void exit (String message, Object... args) {
         message(message, args);
         System.exit(0);
     }
 
     // retrive a blob by its id
     public static Blob getBlobByID(String blob_id) {
-        File Blob_file = join(Repository.BLOB_DIR, blob_id);
-        return readObject(Blob_file, Blob.class);
+        File BlobFile = join(Repository.BLOB_DIR, blob_id);
+        return readObject(BlobFile, Blob.class);
     }
 
     // pass in a file name and return the current commit corresponding blob object
     public static Blob getTrackedBlobByName(String fileName) {
-        Blob blob;
         Commit curCommit = Repository.readCurCommit();
         List<Blob> blobsList = curCommit.getBlobList();
         for (Blob b : blobsList) {

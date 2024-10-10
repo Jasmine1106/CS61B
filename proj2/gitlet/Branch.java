@@ -21,17 +21,17 @@ public class Branch {
     }
 
     // creat a new branch, add into BRANCH_DIR.
-    public static File creat_branch(String branch_name) {
+    public static File creatBranch(String branch_name) {
         return join(BRANCH_DIR, branch_name);
     }
 
     // change commit_id in that branch file
-    public static void update_branch_pointer(File branch, String commit_id) {
+    public static void updateBranchPointer(File branch, String commit_id) {
         writeContents(branch, commit_id);
     }
 
-    public static void updateCurBranch(String commit_id) {
-        writeContents(BRANCH, commit_id);
+    public static void updateCurBranch(String commitID) {
+        writeContents(BRANCH, commitID);
     }
 
 

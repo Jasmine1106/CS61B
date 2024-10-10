@@ -30,8 +30,8 @@ public class Stage  implements Serializable {
     public List<Blob> getBlobList() {
         Blob blob;
         List<Blob> BlobList = new LinkedList<>();
-        for (String blob_id : BlobIdToPath.keySet()) {
-            blob = getBlobByID(blob_id);
+        for (String blobID : BlobIdToPath.keySet()) {
+            blob = getBlobByID(blobID);
             BlobList.add(blob);
         }
         return BlobList;
@@ -40,12 +40,12 @@ public class Stage  implements Serializable {
     // get a list of blobs name in the stage area
     public List<String> getBlobNameList() {
         String blobName;
-        List<String> BlobNameList = new LinkedList<>();
-        for (String blob_id : BlobIdToPath.keySet()) {
-            blobName = getBlobByID(blob_id).getFileName();
-            BlobNameList.add(blobName);
+        List<String> blobNameList = new LinkedList<>();
+        for (String blobID : BlobIdToPath.keySet()) {
+            blobName = getBlobByID(blobID).getFileName();
+            blobNameList.add(blobName);
         }
-        return BlobNameList;
+        return blobNameList;
     }
 
     // get the specific blob  by its file name
@@ -61,8 +61,8 @@ public class Stage  implements Serializable {
 
     // retrive a blob by its id
     public static Blob getBlobByID(String blob_id) {
-        File Blob_file = join(Repository.BLOB_DIR, blob_id);
-        return readObject(Blob_file, Blob.class);
+        File BlobFile = join(Repository.BLOB_DIR, blob_id);
+        return readObject(BlobFile, Blob.class);
     }
 
 
@@ -81,14 +81,14 @@ public class Stage  implements Serializable {
 
     // check if stage contains this blob
     public boolean ifContains(Blob blob) {
-        String blob_id = blob.getBlobId();
-        return BlobIdToPath.containsKey(blob_id);
+        String blobID = blob.getBlobId();
+        return BlobIdToPath.containsKey(blobID);
     }
 
     // delete this blob in the stage area
     public void delete(Blob blob) {
-        String blob_id = blob.getBlobId();
-        BlobIdToPath.remove(blob_id);
+        String blobID = blob.getBlobId();
+        BlobIdToPath.remove(blobID);
     }
 
     // clear stage

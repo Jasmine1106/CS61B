@@ -6,7 +6,6 @@ import static gitlet.Repository.*;
 import static gitlet.Utils.*;
 import java.io.File;
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -36,13 +35,13 @@ public class Commit implements Serializable {
      * The timestamps  */
     private final String timestamp;
     /** the sha1 code of this commit*/
-    private final String commit_id;
+    private final String commitID;
     /** a treemap for storing blobs, file paths is key, and blob_id is value */
     private final Map<String, String> pathToBlobID;
-    /** a Linked list for sorting all parents' commit_id*/
+    /** a Linked list for sorting all parents' commitID*/
     private final List<String> parents;
     // File storing the commit object
-    private final transient File commit_file;
+    private final transient File commitFile;
 
 
 
@@ -51,8 +50,8 @@ public class Commit implements Serializable {
     public Commit(String message, List<String> parents, Map<String, String> pathToBlobID) {
         this.message = message;
         this.timestamp = makeTimestamp();
-        this.commit_id = generateID();
-        this.commit_file = generate_commit_file();
+        this.commitID = generateID();
+        this.commitFile = generateCommitFile();
         this.parents = parents;
         this.pathToBlobID = pathToBlobID;
     }
@@ -62,36 +61,32 @@ public class Commit implements Serializable {
         this.parents = new ArrayList<>();
         this.pathToBlobID = new TreeMap<>();
         this.timestamp = makeInitialTimestamp();
-        this.commit_id = generateID();
-        this.commit_file = generate_commit_file();
-        save_HEAD(this.commit_id);      // write this commit_id into HEAD
+        this.commitID = generateID();
+        this.commitFile = generateCommitFile();
+        saveHEAD(this.commitID);      // write this commitID into HEAD
     }
 
-    // generate a commit_id
+    // generate a commitID
     private String generateID() {
-        String patentsString = parents != null ? parents.toString() : "" ;
-        String pathToBlobIDString = pathToBlobID != null ? pathToBlobID.toString() : "" ;
+        String patentsString = parents != null ? parents.toString() : "";
+        String pathToBlobIDString = pathToBlobID != null ? pathToBlobID.toString() : "";
         return Utils.sha1(timestamp, message, patentsString, pathToBlobIDString);
     }
 
-    private File generate_commit_file() {
-        return join(COMMIT_DIR, commit_id);
+    private File generateCommitFile() {
+        return join(COMMIT_DIR, commitID);
     }
 
-    // save current commit_id into HEAD file
-    public static void save_HEAD(String commitId){
+    // save current commitID into HEAD file
+    public static void saveHEAD(String commitId) {
         writeContents(HEAD, commitId);
     }
 
     public void save() {
-        writeObject(commit_file, this);
+        writeObject(commitFile, this);
     }
 
-    public String from_Head() {
-        return readContentsAsString(HEAD);
-    }
-
-    // get a commit object from commit_id
+    // get a commit object from commitID
     public static Commit fromFile(String commitId) {
         File commitFile = join(COMMIT_DIR, commitId);
         if (!commitFile.exists()) {
@@ -110,8 +105,8 @@ public class Commit implements Serializable {
         return pathToBlobID;
     }
 
-    public String getCommit_id() {
-        return commit_id;
+    public String getCommitID() {
+        return commitID;
     }
 
     public String getMessage() {
@@ -161,7 +156,7 @@ public class Commit implements Serializable {
 
     public void print() {
         System.out.println("===");
-        System.out.println("commit " + commit_id);
+        System.out.println("commit " + commitID);
         System.out.println("Date: " + timestamp);
         System.out.println(message);
         System.out.println();
