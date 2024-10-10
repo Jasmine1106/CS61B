@@ -30,7 +30,8 @@ public class Branch {
         writeContents(branch, commitID);
     }
 
-    public static void updateCurBranch(String commitID) {
+    // BRANCH store the branch name of current branch
+    public static void updateCurBranch(String branchName) {
         writeContents(BRANCH, commitID);
     }
 

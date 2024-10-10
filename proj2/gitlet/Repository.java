@@ -505,7 +505,7 @@ public class Repository {
         clearCWD();
         String commitID = readContentsAsString(branchFile);
         updateCWDFromCommit(commitID);
-        Branch.updateCurBranch(commitID);
+        Branch.updateCurBranch(branchName);
         updateHEAD(commitID);
         clearStage();        // already saved
     }
@@ -601,7 +601,7 @@ public class Repository {
         }
         clearCWD();
         updateCWDFromCommit(commitID);
-        Branch.updateCurBranch(commitID);
+        Branch.updateBranchPointer(BRANCH, commitID);
         clearStage();
     }
 
