@@ -333,14 +333,15 @@ public class Repository {
 
     public static void find(String commit_message) {
         List<String> commit_list = plainFilenamesIn(COMMIT_DIR);
+        boolean ifFound = false;
         for (String commit_id : commit_list) {
             Commit commit_object = fromFile(commit_id);
             if (commit_message.equals(commit_object.getMessage())) {
                 System.out.println(commit_object.getCommit_id());
-                break;
+                ifFound = true;
             }
         }
-        exit("Found no commit with that message.");
+        if (ifFound == false) {exit("Found no commit with that message.");}
     }
 
     /** status
