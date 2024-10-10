@@ -4,6 +4,7 @@ import static gitlet.Utils.*;
 import  static gitlet.Repository.BLOB_DIR;
 import java.io.Serializable;
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -22,7 +23,7 @@ public class Blob implements Serializable {
     private String filePath;
     private File blobSavedFile;
     // a map that keep track of blob_id to file's path
-    private Map<String, String> blob_IdToPath = new TreeMap<>();
+    private Map<String, String> blobIdToPath = new TreeMap<>();
 
     // creatr a new blob object, and add its blob_id and path mapping relationship into blob_IdToPath
     public Blob(File source_file){
@@ -38,11 +39,11 @@ public class Blob implements Serializable {
         Utils.writeObject(blobSavedFile, this);
     }
 
-    public String get_BlobId() {
+    public String getBlobId() {
         return this.blob_id;
     }
 
-    public String get_BlobPath() {
+    public String getBlobPath() {
         return this.source.getPath();
     }
 
@@ -65,6 +66,7 @@ public class Blob implements Serializable {
     private  File generateBlobSavedName(){
         return join(BLOB_DIR, blob_id);
     }
+
 
     @Override
     public boolean equals(Object obj) {

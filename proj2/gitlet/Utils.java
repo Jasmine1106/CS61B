@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.Formatter;
 import java.util.List;
 
+import static gitlet.Repository.BLOB_DIR;
+
 
 /** Assorted utilities.
  *
@@ -245,24 +247,41 @@ class Utils {
     /** some statichelper mathod i wrote ---------------------------------------------------------------------------*/
 
     // search file_name in director recursively ,return the file object ,or null if not found.
-    public static File SearchFile(File directory, String file_name) {
+    public static File searchFile(File directory, String file_name) {
         File[] files = directory.listFiles();
         for (File file : files) {
             if (file.getName().equals(file_name)) {
                 return file;
             }
             if (file.isDirectory()){
-                SearchFile(file, file_name);
+                searchFile(file, file_name);
             }
         }
         return null;
     }
 
-
-
     public static void exit(String message, Object... args) {
         message(message, args);
         System.exit(0);
+    }
+
+    // retrive a blob by its id
+    public static Blob getBlobByID(String blob_id) {
+        File Blob_file = join(Repository.BLOB_DIR, blob_id);
+        return readObject(Blob_file, Blob.class);
+    }
+
+    // pass in a file name and return the commitcorresponding blob object
+    public static Blob getTrackedBlobByName(String fileName) {
+        Blob blob;
+        Commit curCommit = Repository.readCurCommit();
+        List<Blob> blobsList = curCommit.getBlobList();
+        for (Blob b : blobsList) {
+            if (b.getFileName().equals(fileName)) {
+                return b;
+            }
+        }
+        return null;
     }
 
 }

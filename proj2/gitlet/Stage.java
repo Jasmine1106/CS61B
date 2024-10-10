@@ -48,6 +48,17 @@ public class Stage  implements Serializable {
         return BlobNameList;
     }
 
+    // get the specific blob  by its file name
+    public  Blob getBlobByFileName(String fileName) {
+        List<Blob> blobList = getBlobList();
+        for (Blob blob :blobList) {
+            if (blob.getFileName().equals(fileName)) {
+                return blob;
+            }
+        }
+        return null;
+    }
+
     // retrive a blob by its id
     public static Blob getBlobByID(String blob_id) {
         File Blob_file = join(Repository.BLOB_DIR, blob_id);
@@ -70,13 +81,13 @@ public class Stage  implements Serializable {
 
     // check if stage contains this blob
     public boolean ifContains(Blob blob) {
-        String blob_id = blob.get_BlobId();
+        String blob_id = blob.getBlobId();
         return BlobIdToPath.containsKey(blob_id);
     }
 
     // delete this blob in the stage area
     public void delete(Blob blob) {
-        String blob_id = blob.get_BlobId();
+        String blob_id = blob.getBlobId();
         BlobIdToPath.remove(blob_id);
     }
 

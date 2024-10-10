@@ -127,7 +127,7 @@ public class Repository {
         add_stage = readAddStage();
         remove_stage = readRemoveStage();
         Commit curCommit = readCurCommit();
-        File source_file = SearchFile(CWD, file_name);
+        File source_file = searchFile(CWD, file_name);
         if (source_file == null) {
             exit("File does not exist.");
         }
@@ -136,7 +136,7 @@ public class Repository {
         // System.out.println("Blob Path: " + blob.get_BlobPath()); // 调试输出
         // can't add trcked file
         if (!curCommit.getBlobList().contains(blob)) {
-            add_stage.addBlobInMap(blob.get_BlobId(), blob.get_BlobPath());
+            add_stage.addBlobInMap(blob.getBlobId(), blob.getBlobPath());
         }
         else if (remove_stage.ifContains(blob) ) {
             remove_stage.delete(blob);
@@ -172,9 +172,9 @@ public class Repository {
         }
         Commit parent_commit = readCurCommit();
         // update parents
-        List<String> parents = update_parents(parent_commit);
+        List<String> parents = updateParents(parent_commit);
         // update pathToBlobID
-        Map<String, String> pathToBlobID = update_pathToBlobID(parent_commit);
+        Map<String, String> pathToBlobID = updatePathToBlobID(parent_commit);
         // create new commit and save it
         Commit new_commit = new Commit(message, parents, pathToBlobID );
         saveNewCommit(new_commit);
@@ -192,7 +192,7 @@ public class Repository {
     }
 
     // return current commit object
-    private static Commit readCurCommit() {
+    public static Commit readCurCommit() {
         String commit_id = readContentsAsString(HEAD);
         return fromFile(commit_id);
     }
@@ -211,13 +211,13 @@ public class Repository {
         return readObject(REMOVAL, Stage.class);
     }
 
-    private static List<String> update_parents(Commit parent_commit) {
+    private static List<String> updateParents(Commit parent_commit) {
         List<String> parents = parent_commit.getParents();
         parents.add(parent_commit.getCommit_id());
         return parents;
     }
 
-    private static Map<String, String> update_pathToBlobID(Commit parent_commit) {
+    private static Map<String, String> updatePathToBlobID(Commit parent_commit) {
         Map<String, String> pathToBlobID = parent_commit.getPathToBlobID();
         Map<String, String> add_stage_map = calAddStageMap();
         Map<String, String> remove_stage_map = calRemoveStageMap();
@@ -239,7 +239,7 @@ public class Repository {
         Map<String, String> add_stage_map = new TreeMap<>();
         List<Blob> add_stage_blob = add_stage.getBlobList();
         for (Blob blob : add_stage_blob) {
-            add_stage_map.put(blob.get_BlobId(), blob.get_BlobPath());
+            add_stage_map.put(blob.getBlobId(), blob.getBlobPath());
         }
         return add_stage_map;
     }
@@ -248,7 +248,7 @@ public class Repository {
         Map<String, String> remove_stage_map = new TreeMap<>();
         List<Blob> remove_stage_blob = remove_stage.getBlobList();
         for (Blob blob : remove_stage_blob) {
-            remove_stage_map.put(blob.get_BlobId(), blob.get_BlobPath());
+            remove_stage_map.put(blob.getBlobId(), blob.getBlobPath());
         }
         return remove_stage_map;
     }
@@ -260,32 +260,36 @@ public class Repository {
      *  and remove the file from the working directory if the user has not already done so
      *  (do not remove it unless it is tracked in the current commit).
      * */
-
+     // TODO: how to deal with file is not in CWD but already tracked
     public static void rm(String file_name)  {
-        File rm_file = join(CWD, file_name);
-        Blob rm_blob = new Blob(rm_file);
-        Commit cur_commit = readCurCommit();
         // update stage area
         add_stage = readAddStage();
         remove_stage = readRemoveStage();
-        File cwd_rm_file = SearchFile(CWD, file_name);
+        Blob stageBlob = add_stage.getBlobByFileName(file_name);
+        Blob rm_blob = stageBlob != null ? stageBlob : getTrackedBlobByName(file_name);
+        if (rm_blob == null) {
+            exit("No reason to remove the file.");
+        } rm_blob.save();
+        Commit cur_commit = readCurCommit();
         // 1.check Addition folder
         if (add_stage.ifContains(rm_blob)) {
             add_stage.delete(rm_blob);
         }
         // 2.check file_name is tracked by current commit
-        else if (cur_commit.getPathToBlobID().containsKey(rm_blob.get_BlobPath())) {
-            remove_stage.addBlobInMap(rm_blob.get_BlobId(), rm_blob.get_BlobPath());
+        else if (cur_commit.getPathToBlobID().containsKey(rm_blob.getBlobPath())) {
+            Blob trackedBlob = getTrackedBlobByName(file_name);
+            remove_stage.addBlobInMap(trackedBlob.getBlobId(), trackedBlob.getBlobPath());
             // remove file if it is in CWD
-            if (cwd_rm_file != null) { cwd_rm_file.delete(); }
+            File cwdFile = searchFile(CWD, file_name);
+            if (cwdFile != null) { cwdFile.delete(); }
         }
-        else {
-            exit("No reason to remove the file..");
-        }
+
         // save
         add_stage.saveAddStage();
         remove_stage.saveRemoveStage();
     }
+
+
 
     /** log
      *  Starting at the current head commit, display information about each commit backwards along the commit tree
@@ -313,7 +317,7 @@ public class Repository {
      *  Hint: there is a useful method in gitlet.Utils that will help you iterate over files within a directory.
      * */
     public static void global_log() {
-        List<String> commit_list = Utils.plainFilenamesIn(COMMIT_DIR);
+        List<String> commit_list = plainFilenamesIn(COMMIT_DIR);
         for (String commit_id : commit_list) {
             Commit commit_object = fromFile(commit_id);
             commit_object.print();
@@ -328,7 +332,7 @@ public class Repository {
      * */
 
     public static void find(String commit_message) {
-        List<String> commit_list = Utils.plainFilenamesIn(COMMIT_DIR);
+        List<String> commit_list = plainFilenamesIn(COMMIT_DIR);
         for (String commit_id : commit_list) {
             Commit commit_object = fromFile(commit_id);
             if (commit_message.equals(commit_object.getMessage())) {
