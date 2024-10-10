@@ -10,17 +10,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Formatter;
+import java.util.LinkedList;
 import java.util.List;
 
 import static gitlet.Repository.BLOB_DIR;
@@ -271,7 +267,7 @@ class Utils {
         return readObject(Blob_file, Blob.class);
     }
 
-    // pass in a file name and return the commitcorresponding blob object
+    // pass in a file name and return the current commit corresponding blob object
     public static Blob getTrackedBlobByName(String fileName) {
         Blob blob;
         Commit curCommit = Repository.readCurCommit();
@@ -282,6 +278,18 @@ class Utils {
             }
         }
         return null;
+    }
+
+    public static List<Blob> getTrackedBlobList() {
+        List<Blob> trackedBlobList = new LinkedList<>();
+        List<String> blobListID = plainFilenamesIn(BLOB_DIR);
+        if (!blobListID.isEmpty()) {
+            for (String blobID : blobListID) {
+                Blob blob = getBlobByID(blobID);
+                trackedBlobList.add(blob);
+            }
+        }
+        return  trackedBlobList;
     }
 
 }

@@ -341,7 +341,7 @@ public class Repository {
                 ifFound = true;
             }
         }
-        if (ifFound == false) {exit("Found no commit with that message.");}
+        if (!ifFound) {exit("Found no commit with that message.");}
     }
 
     /** status
@@ -453,19 +453,16 @@ public class Repository {
      *  This includes files that have been staged for removal, but then re-created without Gitlet’s knowledge. */
     public static List<String> calUntracked() {
         List<String> untrackedFiles = new ArrayList<>();
-        Commit cur_commit = readCurCommit();
         Stage addStage = readAddStage();
-        Stage removeStage = readRemoveStage();
-        Set<Blob> curCommitBlobsSet = new HashSet<>(cur_commit.getBlobList());
         Set<Blob> addStageBlobSset = new HashSet<>(addStage.getBlobList());
-        Set<Blob> removeStageBlobsSet = new HashSet<>(removeStage.getBlobList());
+        Set<Blob> historyTrackedBlobsSet = new HashSet<>(getTrackedBlobList());
         File[] cwdFiles = CWD.listFiles();
 
         if (cwdFiles != null) {
             for (File file : cwdFiles) {
                 if (file.isFile()) { // check file isn't a directory or other special file
                     Blob blob = new Blob(file);
-                    if (!curCommitBlobsSet.contains(blob) && !addStageBlobSset.contains(blob) && !removeStageBlobsSet.contains(blob)) {
+                    if (!historyTrackedBlobsSet.contains(blob) && !addStageBlobSset.contains(blob)) {
                         untrackedFiles.add(file.getName());
                     }
                 }
@@ -519,9 +516,6 @@ public class Repository {
      *  The staging area is cleared, unless the checked-out branch is the current branch (see Failure cases below).
      */
     public static void checkoutBranch(String branch_name) {
-        if (!checkIfFilesTracked()) {
-            exit("There is an untracked file in the way; delete it, or add and commit it first.");
-        }
         if (readCurBranch().equals(branch_name)) {
             exit("No need to checkout the current branch.");
         }
@@ -530,14 +524,12 @@ public class Repository {
         String commit_id = null;
         File[] branchesList = BRANCH_DIR.listFiles();
         for (File branch : branchesList) {
-            if (branch.getName().equals(branch_name)) {
-                commit_id = readContentsAsString(branch);
-            }
+            if (branch.getName().equals(branch_name)) { commit_id = readContentsAsString(branch);}
         }
         // if branch_name doesn't exist
-        if (commit_id == null) {
-            exit("No such branch exists.");
-        }
+        if (commit_id == null) { exit("No such branch exists.");}
+        // if has sth untracked
+        if (!checkIfFilesTracked()) { exit("There is an untracked file in the way; delete it, or add and commit it first.");}
         Commit checkedCommit = fromFile(commit_id);
         List<Blob> checkedBlobList = checkedCommit.getBlobList();
         for (Blob blob : checkedBlobList) {
@@ -560,12 +552,11 @@ public class Repository {
     /** TODO:check stage areas , Blob_DIR and CWD, if any file in CWD isn't in Blob_DIR or stage ares, return false.
      * */
     private static boolean checkIfFilesTracked () {
-        List<String> untrackedList = new ArrayList<>() ;
-        untrackedList = calUntracked();
+        List<String> untrackedList = calUntracked();
         if (untrackedList.isEmpty()) {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     private static void clearCWD() {

@@ -17,15 +17,15 @@ public class Blob implements Serializable {
     /** List all instance variables of the Blob class here with a useful comment above them
      * describing what that variable represents and how that variable is used.
      */
-    private File source;
-    private String blob_id;
-    private byte[] fileContents;
-    private String filePath;
-    private File blobSavedFile;
+    private final File source;
+    private final String blob_id;
+    private final byte[] fileContents;
+    private final String filePath;
+    private final File blobSavedFile;
     // a map that keep track of blob_id to file's path
-    private Map<String, String> blobIdToPath = new TreeMap<>();
+    private final Map<String, String> blobIdToPath = new TreeMap<>();
 
-    // creatr a new blob object, and add its blob_id and path mapping relationship into blob_IdToPath
+    // create a new blob object, and add its blob_id and path mapping relationship into blob_IdToPath
     public Blob(File source_file){
         this.source = source_file;
         this.fileContents = Utils.readContents(source_file);

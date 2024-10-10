@@ -118,7 +118,7 @@ public class Main {
                     } else if (args.length == 2) { // checkout [branch name]
                         Repository.checkoutBranch(args[1]);
                     } else {
-                        System.out.println("Invalid number of arguments for: checkout.");
+                        System.out.println("Incorrect operands.");
                     }
                     break;
                 case "branch":
