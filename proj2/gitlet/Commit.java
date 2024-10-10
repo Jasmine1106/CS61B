@@ -162,5 +162,25 @@ public class Commit implements Serializable {
         System.out.println();
     }
 
+    public static String getCommitIDByAbbreb(String abbrevCommitID) {
+        File[] commitFiles = COMMIT_DIR.listFiles();
+        int count = 0;
+        String commitID = null;
+        for (File commitFile : commitFiles) {
+            if (commitFile.getName().startsWith(abbrevCommitID)) {
+                commitID = commitFile.getName();
+                count += 1;
+            }
+        }
+        if (count == 1) {
+            return commitID;
+        } else if (count == 0) {
+            System.out.println("No commit with that abbreviation exists.");
+        } else {
+            System.out.println("Abbreviation is not unique.");
+        }
+        return null;
+    }
+
 
 }
