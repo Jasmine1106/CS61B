@@ -465,7 +465,7 @@ public class Repository {
      *  overwriting the version of the file that’s already there if there is one. The new version of the file is not staged.
      */
     public static void checkoutFromCommit(String commitID, String fileName) {
-        Commit checkedCommit = fromFile(commitID);
+        Commit checkedCommit = fromFile(commitID) != null ? fromFile(commitID) : fromFile(getCommitIDByAbbreb(commitID));
         if (checkedCommit == null) {
             exit("No commit with that id exists.");
         }
