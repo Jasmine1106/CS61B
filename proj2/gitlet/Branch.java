@@ -8,10 +8,21 @@ import java.io.File;
  * */
 public class Branch {
 
+    public static File getBranchFileByName(String branchName) {
+        File[] branchesList = BRANCH_DIR.listFiles();
+        if (branchesList != null) {
+            for (File branch : branchesList) {
+                if (branch.getName().equals(branchName)) {
+                    return branch;
+                }
+            }
+        }
+        return null;
+    }
+
     // creat a new branch, add into BRANCH_DIR.
     public static File creat_branch(String branch_name) {
-        File new_branch = join(BRANCH_DIR, branch_name);
-        return new_branch;
+        return join(BRANCH_DIR, branch_name);
     }
 
     // change commit_id in that branch file

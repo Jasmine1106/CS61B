@@ -234,7 +234,7 @@ public class Repository {
         return pathToBlobID;
     }
 
-    public static Map<String, String> calAddStageMap() {
+    private static Map<String, String> calAddStageMap() {
         add_stage = readAddStage();
         Map<String, String> add_stage_map = new TreeMap<>();
         List<Blob> add_stage_blob = add_stage.getBlobList();
@@ -243,7 +243,7 @@ public class Repository {
         }
         return add_stage_map;
     }
-    public static Map<String, String> calRemoveStageMap() {
+    private static Map<String, String> calRemoveStageMap() {
         remove_stage = readRemoveStage();
         Map<String, String> remove_stage_map = new TreeMap<>();
         List<Blob> remove_stage_blob = remove_stage.getBlobList();
@@ -260,7 +260,6 @@ public class Repository {
      *  and remove the file from the working directory if the user has not already done so
      *  (do not remove it unless it is tracked in the current commit).
      * */
-     // TODO: how to deal with file is not in CWD but already tracked
     public static void rm(String file_name)  {
         // update stage area
         add_stage = readAddStage();
@@ -348,24 +347,6 @@ public class Repository {
      *  Displays what branches currently exist, and marks the current branch with a *.
      *  Also displays what files have been staged for addition or removal.
      *  An example of the exact format it should follow is as follows.
-     * === Branches ===
-     * *master
-     * other-branch
-     *
-     * === Staged Files ===
-     * wug.txt
-     * wug2.txt
-     *
-     * === Removed Files ===
-     * goodbye.txt
-     *
-     * === Modifications Not Staged For Commit ===
-     * junk.txt (deleted)
-     * wug3.txt (modified)
-     *
-     * === Untracked Files ===
-     * random.stuff
-     *
      * */
     public static void status() {
         // === branches ===
@@ -473,13 +454,13 @@ public class Repository {
     }
 
 
-    /** Usages:
+    /* Usages:
      *  1.checkout -- [file name]
      *  2.checkout [commit id] -- [file name]
      *  3.checkout [branch name]
      * */
 
-    /** Takes the version of the file as it exists in the head commit and puts it in the working directory,
+    /* Takes the version of the file as it exists in the head commit and puts it in the working directory,
      *  overwriting the version of the file that’s already there if there is one. The new version of the file is not staged.
      */
     public static void checkoutFromHEAD(String file_name) {
@@ -487,7 +468,7 @@ public class Repository {
         checkoutFromCommit(cur_commit.getCommit_id(), file_name);
     }
 
-    /** Takes the version of the file as it exists in the commit with the given id, and puts it in the working directory,
+    /* Takes the version of the file as it exists in the commit with the given id, and puts it in the working directory,
      *  overwriting the version of the file that’s already there if there is one. The new version of the file is not staged.
      */
     public static void checkoutFromCommit(String commit_id, String file_name) {
@@ -495,13 +476,15 @@ public class Repository {
         if (checkedCommit == null) {
             exit("No commit with that id exists.");
         }
-        List<Blob> blobList = checkedCommit.getBlobList();
         boolean ifFileFound = false;
-        for (Blob blob : blobList) {
-            if (blob.getFileName().equals(file_name)) {
-                writeBlobContentsIntoCWD(blob);
-               ifFileFound = true;
-                break;
+        List<Blob> blobList = checkedCommit.getBlobList();
+        if (!blobList.isEmpty()) {
+            for (Blob blob : blobList) {
+                if (blob.getFileName().equals(file_name)) {
+                    writeBlobContentsIntoCWD(blob);
+                    ifFileFound = true;
+                    break;
+                }
             }
         }
         if (!ifFileFound) {
@@ -515,31 +498,29 @@ public class Repository {
      *  Any files that are tracked in the current branch but are not present in the checked-out branch are deleted.
      *  The staging area is cleared, unless the checked-out branch is the current branch (see Failure cases below).
      */
-    public static void checkoutBranch(String branch_name) {
-        if (readCurBranch().equals(branch_name)) {
+    public static void checkoutBranch(String branchName) {
+        if (readCurBranch().equals(branchName)) {
             exit("No need to checkout the current branch.");
         }
-        clearCWD();
         // search BranchDIR
-        String commit_id = null;
-        File[] branchesList = BRANCH_DIR.listFiles();
-        for (File branch : branchesList) {
-            if (branch.getName().equals(branch_name)) { commit_id = readContentsAsString(branch);}
-        }
+        File branchFile = Branch.getBranchFileByName(branchName);
         // if branch_name doesn't exist
-        if (commit_id == null) { exit("No such branch exists.");}
+        if (branchFile == null) { exit("No such branch exists.");}
         // if has sth untracked
         if (!checkIfFilesTracked()) { exit("There is an untracked file in the way; delete it, or add and commit it first.");}
+        // above is code is do some checking
+        clearCWD();
+        String commit_id = readContentsAsString(branchFile);
         Commit checkedCommit = fromFile(commit_id);
         List<Blob> checkedBlobList = checkedCommit.getBlobList();
         for (Blob blob : checkedBlobList) {
-            checkoutFromCommit(commit_id, blob.getFileName());
+            writeBlobContentsIntoCWD(blob);
         }
-
         Branch.updateCurBranch(commit_id);
         updateHEAD(commit_id);
         clearStage();        // already saved
     }
+
 
     private static void updateHEAD(String commit_id) {
         writeContents(HEAD, commit_id);
@@ -549,15 +530,7 @@ public class Repository {
         return readContentsAsString(BRANCH);
     }
 
-    /** TODO:check stage areas , Blob_DIR and CWD, if any file in CWD isn't in Blob_DIR or stage ares, return false.
-     * */
-    private static boolean checkIfFilesTracked () {
-        List<String> untrackedList = calUntracked();
-        if (untrackedList.isEmpty()) {
-            return true;
-        }
-        return false;
-    }
+    private static boolean checkIfFilesTracked () { return calUntracked().isEmpty();}
 
     private static void clearCWD() {
         File[] allCWDFiles = CWD.listFiles();
@@ -608,17 +581,10 @@ public class Repository {
 
     public static void rm_branch(String branch_name) {
         String cur_branch = readContentsAsString(BRANCH);
-        if (branch_name.equals(cur_branch)) {
-            exit("Cannot remove the current branch.");
-        }
-        List<String> branches = plainFilenamesIn(BRANCH_DIR);
-        for (String branch : branches) {
-            if (branch.equals(branch_name)) {
-                File branch_rm = join(BRANCH_DIR, branch_name);
-                restrictedDelete(branch_rm);
-            }
-        }
-        exit("A branch with that name does not exist.");
+        if (branch_name.equals(cur_branch)) { exit("Cannot remove the current branch.");}
+        File branchFile = Branch.getBranchFileByName(branch_name);
+        if (branchFile == null) { exit("A branch with that name does not exist.");}
+        restrictedDelete(branchFile);
     }
 
     /** reset [commit id]
