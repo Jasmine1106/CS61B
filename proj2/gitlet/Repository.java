@@ -1,14 +1,11 @@
 package gitlet;
 
-
-
 import java.io.File;
 import java.io.IOException;
 
 import java.util.*;
 import static gitlet.Utils.*;
 import static gitlet.Commit.*;
-
 
 /** Represents a gitlet repository.
  *  does at a high level.
@@ -62,20 +59,14 @@ public class Repository {
     // Does require filesystem operations to allow for persistence.
 
     /** init
-     *  Creates a new Gitlet version-control system in the current directory.
-     *  This system will automatically start with one commit: a commit that contains no files and has the commit message: initial commit.
-     *  It will have a single branch: master, which initially points to this initial commit, and master will be the current branch.
-     *  The timestamp for this initial commit will be 00:00:00 UTC,*Thursday, 1 January 1970
-     *  in whatever format you choose for dates (this is called “The (Unix) Epoch”, represented internally by the time 0.)
+     *  1. creat the gitlet directory
+     *  2. initial commit
+     *  3. set current branch to master and update BRANCH_DIR
      */
     public static void init() throws IOException {
         if (GITLET_DIR.exists()) {
             exit("A Gitlet version-control system already exists in the current directory.");
         }
-        /** 1. creat the gitlet directory
-         *  2. initial commit
-         *  3. set current branch to master and update BRANCH_DIR
-         */
         setupPersistence();
         // create initial commit
         Commit inital = new Commit();
@@ -88,7 +79,6 @@ public class Repository {
 
     /** create the basic structrue of gitlet directory */
     private static void setupPersistence() throws IOException {
-        // TODO
         GITLET_DIR.mkdir();
         OBJECT_DIR.mkdir();
         STAGE_DIR.mkdir();
@@ -109,8 +99,10 @@ public class Repository {
 
 
     /** add [file name]
-     *  Adds a copy of the file as it currently exists to the staging area.The staging area should be somewhere in .gitlet.
-     *  If the current working version of the file is identical to the version in the current commit, do not stage it to be added,
+     *  Adds a copy of the file as it currently exists to the staging area.
+     *  The staging area should be somewhere in .gitlet.
+     *  If the current working version of the file is identical
+     *  to the version in the current commit, do not stage it to be added,
      *  and remove it from the staging area if it is already there.
      */
     // a private method to search file recursively
@@ -138,19 +130,19 @@ public class Repository {
         removeStage.saveRemoveStage();
     }
 
-
-
-
     /** commit [message]
-     *  Saves a snapshot of tracked files in the current commit and staging area so they can be restored at a later time,
-     *  creating a new commit. The commit is said to be tracking the saved files. By default,
-     *  each commit’s snapshot of files will be exactly the same as its parent commit’s snapshot of files;
-     *  it will keep versions of files exactly as they are, and not update them.
-     *  A commit will only update the contents of files it is tracking that have been staged for addition at the time of commit,
-     *  in which case the commit will now include the version of the file that was staged instead of the version it got from its parent.
-     *  A commit will save and start tracking any files that were staged for addition but weren’t tracked by its parent. Finally,
-     *  files tracked in the current commit may be untracked in the new commit as a result being staged for removal by the rm command(below).
-     *
+     *  Saves a snapshot of tracked files in the current commit and staging area
+     *  so they can be restored at a later time,
+     *  creating a new commit. The commit is said to be tracking the saved files.
+     *  By default, each commit’s snapshot of files will be exactly the same as
+     *  its parent commit’s snapshot of files; it will keep versions of files exactly
+     *  as they are, and not update them.
+     *  A commit will only update the contents of files it is tracking that have been staged
+     *  for addition at the time of commit, in which case the commit will now
+     *  include the version of the file that was staged instead of the version it got from its parent.
+     *  A commit will save and start tracking any files that were staged for addition
+     *  but weren’t tracked by its parent. Finally, files tracked in the current commit
+     *  may be untracked in the new commit as a result being staged for removal by the rm command.
      */
     public static void commit(String message) {
         addStage = readAddStage();
@@ -283,11 +275,13 @@ public class Repository {
     }
 
 
-
     /** log
-     *  Starting at the current head commit, display information about each commit backwards along the commit tree
-     *  until the initial commit, following the first parent commit links, ignoring any second parents found in merge commits.
-     *  (In regular Git, this is what you get with git log --first-parent). This set of commit nodes is called the commit’s history.
+     *  Starting at the current head commit, display information about each commit
+     *  backwards along the commit tree until the initial commit,
+     *  following the first parent commit links,
+     *  ignoring any second parents found in merge commits.
+     *  (In regular Git, this is what you get with git log --first-parent).
+     *  This set of commit nodes is called the commit’s history.
      *  For every node in this history, the information it should display is the commit id,
      *  the time the commit was made, and the commit message.
      * */
@@ -306,8 +300,8 @@ public class Repository {
     }
 
     /** global-log
-     *  Like log, except displays information about all commits ever made. The order of the commits does not matter.
-     *  Hint: there is a useful method in gitlet.Utils that will help you iterate over files within a directory.
+     *  Like log, except displays information about all commits ever made.
+     *  The order of the commits does not matter.
      * */
     public static void global_log() {
         List<String> commit_list = plainFilenamesIn(COMMIT_DIR);
@@ -320,8 +314,8 @@ public class Repository {
     /** find [commit message]
      *  Prints out the ids of all commits that have the given commit message, one per line.
      *  If there are multiple such commits, it prints the ids out on separate lines.
-     *  The commit message is a single operand; to indicate a multiword message, put the operand in quotation marks,
-     *  as for the commit command below. Hint: the hint for this command is the same as the one for global-log.
+     *  The commit message is a single operand; to indicate a multiword message,
+     *  put the operand in quotation marks, as for the commit command below.
      * */
 
     public static void find(String commitMessage) {
@@ -396,7 +390,8 @@ public class Repository {
         for (Blob blob: curCommitBlobSet) {
             File fileInCWD = join(CWD, blob.getFileName());
             // 1. search Blob_dir, uneaqul version in CWD, not in staged(modified)
-            if (!addStagedBlobSet.contains(blob) && !removeStageBlobSet.contains(blob)) {
+            if (!addStagedBlobSet.contains(blob) && !removeStageBlobSet.contains(blob)
+                    &&fileInCWD.isFile()) {
                     byte[] CWDFileContents = readContents(fileInCWD);
                     if (!Arrays.equals(CWDFileContents, blob.getFileContents())) {
                          modifiedNotStageFiles.add(blob.getFileName() + "(modified)");
@@ -425,7 +420,9 @@ public class Repository {
     }
 
     /** for files present in the working directory but neither staged for addition nor tracked.
-     *  This includes files that have been staged for removal, but then re-created without Gitlet’s knowledge. */
+     *  This includes files that have been staged for removal,
+     *  but then re-created without Gitlet’s knowledge.
+     *  */
     public static List<String> calUntracked() {
         List<String> untrackedFiles = new ArrayList<>();
         Stage addStage = readAddStage();
@@ -448,26 +445,35 @@ public class Repository {
     }
 
 
-    /* Usages:
+    /** Usages:
      *  1.checkout -- [file name]
      *  2.checkout [commit id] -- [file name]
      *  3.checkout [branch name]
      * */
 
-    /* Takes the version of the file as it exists in the head commit and puts it in the working directory,
-     *  overwriting the version of the file that’s already there if there is one. The new version of the file is not staged.
+    /** Takes the version of the file as it exists in the head commit and puts it in the working directory,
+     *  overwriting the version of the file that’s already there if there is one.
+     *  The new version of the file is not staged.
      */
     public static void checkoutFromHEAD(String file_name) {
         Commit cur_commit = readCurCommit();
         checkoutFromCommit(cur_commit.getCommitID(), file_name);
     }
 
-    /* Takes the version of the file as it exists in the commit with the given id, and puts it in the working directory,
-     *  overwriting the version of the file that’s already there if there is one. The new version of the file is not staged.
+    /** Takes the version of the file as it exists in the commit with the given id,
+     *  and puts it in the working directory,
+     *  overwriting the version of the file that’s already there if there is one.
+     *  The new version of the file is not staged.
      */
     public static void checkoutFromCommit(String commitID, String fileName) {
         // handle the abbrev from of commitID
-        Commit checkedCommit = getCommitByID(commitID) != null ? getCommitByID(commitID) : getCommitByID(getCommitIDByAbbreb(commitID));
+        Commit checkedCommit = getCommitByID(commitID);
+        if (checkedCommit == null) {
+            String fullCommitID = getCommitIDByAbbreb(commitID);
+            if (fullCommitID != null) {
+                checkedCommit = getCommitByID(fullCommitID);
+            }
+        }
         if (checkedCommit == null) {
             exit("No commit with that id exists.");
         }
@@ -487,11 +493,13 @@ public class Repository {
         }
     }
 
-    /** Takes all files in the commit at the head of the given branch, and puts them in the working directory,
-     *  overwriting the versions of the files that are already there if they exist. Also, at the end of this command,
-     *  the given branch will now be considered the current branch (HEAD).
-     *  Any files that are tracked in the current branch but are not present in the checked-out branch are deleted.
-     *  The staging area is cleared, unless the checked-out branch is the current branch (see Failure cases below).
+    /** Takes all files in the commit at the head of the given branch,
+     *  and puts them in the working directory,
+     *  overwriting the versions of the files that are already there if they exist.
+     *  Also, at the end of this command, the given branch will now be considered the current branch (HEAD).
+     *  Any files that are tracked in the current branch
+     *  but are not present in the checked-out branch are deleted.
+     *  The staging area is cleared, unless the checked-out branch is the current branch
      */
     public static void checkoutBranch(String branchName) {
         if (readCurBranch().equals(branchName)) {
@@ -501,7 +509,9 @@ public class Repository {
         File branchFile = Branch.getBranchFileByName(branchName);
         if (branchFile == null) { exit("No such branch exists.");}
         // if has sth untracked
-        if (!checkIfFilesTracked()) { exit("There is an untracked file in the way; delete it, or add and commit it first.");}
+        if (!checkIfFilesTracked()) {
+            exit("There is an untracked file in the way; delete it, or add and commit it first.");
+        }
         // above is code is do some checking
         clearCWD();
         String branchHeadCommitID = readContentsAsString(branchFile);
@@ -525,8 +535,6 @@ public class Repository {
         File fileName = join(CWD, blob.getFileName());
         byte[] fileContent = blob.getFileContents();
         // DEBUG:
-
-
         writeContents(fileName,  fileContent);
     }
 
@@ -576,8 +584,10 @@ public class Repository {
     }
 
     /** rm-branch [branch name]
-     *  Deletes the branch with the given name. This only means to delete the pointer associated with the branch;
-     *  it does not mean to delete all commits that were created under the branch, or anything like that.
+     *  Deletes the branch with the given name.
+     *  This only means to delete the pointer associated with the branch;
+     *  it does not mean to delete all commits that were created under the branch,
+     *  or anything like that.
      */
 
     public static void rm_branch(String branchName) {
@@ -593,7 +603,8 @@ public class Repository {
     }
 
     /** reset [commit id]
-     *  Checks out all the files tracked by the given commit. Removes tracked files that are not present in that commit.
+     *  Checks out all the files tracked by the given commit.
+     *  Removes tracked files that are not present in that commit.
      *  Also moves the current branch’s head to that commit node.
      *  See the intro for an example of what happens to the head pointer after using reset.
      *  The [commit id] may be abbreviated as for checkout. The staging area is cleared.
@@ -611,8 +622,7 @@ public class Repository {
     }
 
     /** merge [branch name]
-     *  Merges files from the given branch into the current branch. This method is a bit complicated,
-     *  so here’s a more detailed description:
+     *  Merges files from the given branch into the current branch.
      */
     public static void merge(String branchName) {
 

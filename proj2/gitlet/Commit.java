@@ -1,6 +1,5 @@
 package gitlet;
 
-// TODO: any imports you need here
 
 import static gitlet.Repository.*;
 import static gitlet.Utils.*;
@@ -13,25 +12,17 @@ import java.util.*;
 
 
 /** Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class does at a high level.
  *  @author Jasmine1106
- *  1.Each commit should contain the date and time it was made.
- *  2.Each commit has a log message associated with it that describes the changes to the files in the commit.
- *   This is specified by the user. The entire message should take up only one entry in the array args that is passed to main.
- *   To include multiword messages, you’ll have to surround them in quotes.
- *  3.Each commit is identified by its SHA-1 id, which must include the file (blob) references of its files,
- *   parent reference, log message, and commit time.
  */
 public class Commit implements Serializable {
     /**
-     * TODO: add instance variables here.
      * List all instance variables of the Commit class here with a useful
      * comment above them describing what that variable represents and how that
      * variable is used. We've provided one example for `message`.
      */
     /** The message of this Commit. */
     private final String message;
-    /** use java.time and java.time.DatetimeFormatter class rather than spec recommending.
+    /** use java.time  class rather than spec recommending.
      * The timestamps  */
     private final String timestamp;
     /** the sha1 code of this commit*/
@@ -45,7 +36,6 @@ public class Commit implements Serializable {
 
 
 
-    /* TODO: fill in the rest of this class. */
     /** creat a commit object */
     public Commit(String message, List<String> parents, Map<String, String> pathToBlobID) {
         this.message = message;
@@ -89,10 +79,10 @@ public class Commit implements Serializable {
     // get a commit object from commitID
     public static Commit getCommitByID(String commitId) {
         File commitFile = join(COMMIT_DIR, commitId);
-        if (!commitFile.exists()) {
-            exit("No commit with that id exists.");
+        if (commitFile.exists()) {
+            return readObject(commitFile, Commit.class);
         }
-        return readObject(commitFile, Commit.class);
+        return null;
     }
 
 
@@ -116,8 +106,8 @@ public class Commit implements Serializable {
     public List<Blob> getBlobList() {
         List<Blob> blobList = new LinkedList<>();
         for (String path : pathToBlobID.keySet()) {
-            String blob_id = pathToBlobID.get(path);
-            Blob blob = Stage.getBlobByID(blob_id);
+            String blobID = pathToBlobID.get(path);
+            Blob blob = Stage.getBlobByID(blobID);
             blobList.add(blob);
         }
         return blobList;
@@ -131,13 +121,12 @@ public class Commit implements Serializable {
 
     // initial timestamp
     public static String makeInitialTimestamp() {
-        Date date = new Date(0);
         ZonedDateTime epoch = ZonedDateTime.ofInstant(new java.util.Date(0).toInstant(), ZoneId.systemDefault());
         return formatTimestamp(epoch);
     }
 
     /** @source: ChatGPT
-     * problem: My output is  Thu Jan 01 08:00:00 1970 +08:00,
+     * problem: Mine  is  Thu Jan 01 08:00:00 1970 +08:00,
      * but need  Thu Jan 01 08:00:00 1970 +0800
      * ask GPT how to get rid of : between 08:00
      */
@@ -149,7 +138,7 @@ public class Commit implements Serializable {
 
     /** print as following format
      * ===
-     * commit a0da1ea5a15ab613bf9961fd86f010cf74c7ee48
+     * commit [commitID]
      * Date: Thu Nov 9 20:00:05 2017 -0800
      * A commit message.
      */
@@ -164,23 +153,22 @@ public class Commit implements Serializable {
 
     public static String getCommitIDByAbbreb(String abbrevCommitID) {
         File[] commitFiles = COMMIT_DIR.listFiles();
-        int count = 0;
-        String commitID = null;
+        int matchCount = 0;
+        String commitFullID = null;
         for (File commitFile : commitFiles) {
             if (commitFile.getName().startsWith(abbrevCommitID)) {
-                commitID = commitFile.getName();
-                count += 1;
+                commitFullID = commitFile.getName();
+                matchCount += 1;
+                if (matchCount > 1) {
+                    System.out.println("Abbreviation is not unique.");
+                    return null;
+                }
             }
         }
-        if (count == 1) {
-            return commitID;
-        } else if (count == 0) {
-            System.out.println("No commit with that abbreviation exists.");
-        } else {
-            System.out.println("Abbreviation is not unique.");
+        if (matchCount == 1) {
+            return commitFullID;
         }
         return null;
     }
-
 
 }
