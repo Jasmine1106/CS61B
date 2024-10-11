@@ -22,10 +22,6 @@ public class Stage  implements Serializable {
         blobIdToPath = new HashMap<>();
     }
 
-    public Map<String, String> get_stage() {
-        return blobIdToPath;
-    }
-
     // get a list of blobs in the stage area
     public List<Blob> getBlobList() {
         Blob blob;
@@ -60,11 +56,10 @@ public class Stage  implements Serializable {
     }
 
     // retrive a blob by its id
-    public static Blob getBlobByID(String blob_id) {
-        File blobFile = join(Repository.BLOB_DIR, blob_id);
+    public static Blob getBlobByID(String blobID) {
+        File blobFile = join(Repository.BLOB_DIR, blobID);
         return readObject(blobFile, Blob.class);
     }
-
 
     // put a new blob into add_stage
     public void addBlobInMap(String blobID, String blobPath) {

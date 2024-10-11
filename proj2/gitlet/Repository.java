@@ -33,13 +33,13 @@ public class Repository {
      * */
 
     // Default branch name.
-    public static final String DEFAULT_BRANCH_NAME = "master";
-    public static final File CWD = new File(System.getProperty("user.dir"));
+    private static final String DEFAULT_BRANCH_NAME = "master";
+    private static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
-    public static final File GITLET_DIR = join(CWD, ".gitlet");
+    private static final File GITLET_DIR = join(CWD, ".gitlet");
     /** the first floor of the directory*/
-    public static final File OBJECT_DIR = join(GITLET_DIR, "OBJECT_DIR");
-    public static final File STAGE_DIR = join(GITLET_DIR, "STAGE_DIR");
+    private static final File OBJECT_DIR = join(GITLET_DIR, "OBJECT_DIR");
+    private static final File STAGE_DIR = join(GITLET_DIR, "STAGE_DIR");
     public static File BRANCH_DIR = join(GITLET_DIR, "BRANCH_DIR");
     public static File HEAD = join(GITLET_DIR, "HEAD");
     public static File BRANCH = join(GITLET_DIR, "BRANCH");
@@ -319,9 +319,9 @@ public class Repository {
         List<String> commitList = plainFilenamesIn(COMMIT_DIR);
         boolean ifFound = false;
         for (String commitID: commitList) {
-            Commit commit_object = getCommitByID(commitID);
-            if (commitMessage.equals(commit_object.getMessage())) {
-                System.out.println(commit_object.getCommitID());
+            Commit commitObject = getCommitByID(commitID);
+            if (commitMessage.equals(commitObject.getMessage())) {
+                System.out.println(commitObject.getCommitID());
                 ifFound = true;
             }
         }
@@ -390,9 +390,9 @@ public class Repository {
         for (Blob blob: curCommitBlobSet) {
             File fileInCWD = join(CWD, blob.getFileName());
             // 1. search Blob_dir, uneaqul version in CWD, not in staged(modified)
-            if (!addStagedBlobSet.contains(blob) &&
-                !removeStageBlobSet.contains(blob) &&
-                fileInCWD.isFile()) {
+            if (!addStagedBlobSet.contains(blob)
+                    && !removeStageBlobSet.contains(blob)
+                    && fileInCWD.isFile()) {
                 byte[] cwdFileContents = readContents(fileInCWD);
                 if (!Arrays.equals(cwdFileContents, blob.getFileContents())) {
                     modifiedNotStageFiles.add(blob.getFileName() + "(modified)");
@@ -436,8 +436,8 @@ public class Repository {
                 if (file.isFile()) {
                     // check file isn't a directory or other special file
                     Blob blob = new Blob(file);
-                    if (!historyTrackedBlobsSet.contains(blob) &&
-                        !addStageBlobSset.contains(blob)) {
+                    if (!historyTrackedBlobsSet.contains(blob)
+                            && !addStageBlobSset.contains(blob)) {
                         untrackedFiles.add(file.getName());
                     }
                 }
@@ -557,7 +557,7 @@ public class Repository {
         return readContentsAsString(BRANCH);
     }
 
-    private static boolean checkIfFilesTracked () {
+    private static boolean checkIfFilesTracked() {
         return calUntracked().isEmpty();
     }
 
