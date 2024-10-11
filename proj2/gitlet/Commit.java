@@ -121,7 +121,8 @@ public class Commit implements Serializable {
 
     // initial timestamp
     public static String makeInitialTimestamp() {
-        ZonedDateTime epoch = ZonedDateTime.ofInstant(new java.util.Date(0).toInstant(), ZoneId.systemDefault());
+        ZonedDateTime epoch = ZonedDateTime.ofInstant
+                (new java.util.Date(0).toInstant(), ZoneId.systemDefault());
         return formatTimestamp(epoch);
     }
 

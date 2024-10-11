@@ -25,17 +25,17 @@ public class Blob implements Serializable {
     private final Map<String, String> blobIdToPath = new TreeMap<>();
 
     // create a new blob object, and add its blobID and path mapping relationship into blob_IdToPath
-    public Blob(File source_file) {
-        this.source = source_file;
-        this.fileContents = Utils.readContents(source_file);
-        this.filePath = source_file.getPath();
+    public Blob(File sourceFile) {
+        this.source = sourceFile;
+        this.fileContents = Utils.readContents(sourceFile);
+        this.filePath = sourceFile.getPath();
         this.blobID = Utils.sha1(fileContents, filePath);
         this.blobSavedFile = generateBlobSavedName();
     }
 
 
     public void save() {
-        Utils.writeObject (blobSavedFile, this);
+        Utils.writeObject(blobSavedFile, this);
     }
 
     public String getBlobId() {

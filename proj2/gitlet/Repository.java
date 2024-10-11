@@ -13,10 +13,9 @@ import static gitlet.Commit.*;
  *  @author Jasmine1106
  */
 public class Repository {
-    /**
-     * List all instance variables of the Repository class here with a useful
-     * comment above them describing what that variable represents and how that
-     * variable is used. We've provided two examples for you.
+    /** List all instance variables of the Repository class here with a useful
+     *  comment above them describing what that variable represents and how that
+     *  variable is used. We've provided two examples for you.
      */
     /** The current working directory.
      * .GITLET_DIR/ -- hidden gitlet directory
@@ -42,7 +41,7 @@ public class Repository {
     public static final File OBJECT_DIR = join(GITLET_DIR, "OBJECT_DIR");
     public static final File STAGE_DIR = join(GITLET_DIR, "STAGE_DIR");
     public static File BRANCH_DIR = join(GITLET_DIR, "BRANCH_DIR");
-    public static File HEAD = join (GITLET_DIR, "HEAD");
+    public static File HEAD = join(GITLET_DIR, "HEAD");
     public static File BRANCH = join(GITLET_DIR, "BRANCH");
     /** the second floor of the directory*/
     public static File BLOB_DIR = join(OBJECT_DIR, "BLOB_DIR");
@@ -73,8 +72,8 @@ public class Repository {
         inital.save();
         // branch
         writeContents(BRANCH, DEFAULT_BRANCH_NAME);
-        File head_file = join(BRANCH_DIR, DEFAULT_BRANCH_NAME);
-        writeContents(head_file, inital.getCommitID());
+        File headFile = join(BRANCH_DIR, DEFAULT_BRANCH_NAME);
+        writeContents(headFile, inital.getCommitID());
     }
 
     /** create the basic structrue of gitlet directory */
@@ -106,11 +105,11 @@ public class Repository {
      *  and remove it from the staging area if it is already there.
      */
     // a private method to search file recursively
-    public static void add(String file_name) {
+    public static void add(String fileName) {
         addStage = readAddStage();
         removeStage = readRemoveStage();
         Commit curCommit = readCurCommit();
-        File sourceFile = searchFile(CWD, file_name);
+        File sourceFile = searchFile(CWD, fileName);
         if (sourceFile == null) {
             exit("File does not exist.");
         }
@@ -120,8 +119,7 @@ public class Repository {
         // can't add trcked file
         if (!curCommit.getBlobList().contains(blob)) {
             addStage.addBlobInMap(blob.getBlobId(), blob.getBlobPath());
-        }
-        else if (removeStage.ifContains(blob) ) {
+        } else if(removeStage.ifContains(blob)) {
             removeStage.delete(blob);
         }
         // save
@@ -142,7 +140,7 @@ public class Repository {
      *  include the version of the file that was staged instead of the version it got from its parent.
      *  A commit will save and start tracking any files that were staged for addition
      *  but weren’t tracked by its parent. Finally, files tracked in the current commit
-     *  may be untracked in the new commit as a result being staged for removal by the rm command.
+     *  may be untracked in the new commit as a result being staged for removal by  rm.
      */
     public static void commit(String message) {
         addStage = readAddStage();
@@ -153,16 +151,14 @@ public class Repository {
         if (message == null) {
             exit("Please enter a commit message.");
         }
-        Commit parent_commit = readCurCommit();
+        Commit parentCommit = readCurCommit();
         // update parents
-        List<String> parents = updateParents(parent_commit);
+        List<String> parents = updateParents(parentCommit);
         // update pathToBlobID
-        Map<String, String> pathToBlobID = updatePathToBlobID(parent_commit);
+        Map<String, String> pathToBlobID = updatePathToBlobID(parentCommit);
         // create new commit and save it
         Commit newCommit = new Commit(message, parents, pathToBlobID );
         saveNewCommit(newCommit);
-
-
     }
     private static void saveNewCommit(Commit new_commit) {
         // save commit object and HEAD
@@ -206,15 +202,15 @@ public class Repository {
     private static Map<String, String> updatePathToBlobID(Commit parentCommit) {
         Map<String, String> pathToBlobID = parentCommit.getPathToBlobID();
         Map<String, String> addStageMaptageMap = calAddStageMap();
-        Map<String, String> remove_stage_map = calRemoveStageMap();
+        Map<String, String> removeStageMap = calRemoveStageMap();
         if (addStageMaptageMap.size() != 0) {
-            for (String blob_id : addStageMaptageMap.keySet()) {
-                pathToBlobID.put(addStageMaptageMap.get(blob_id), blob_id);
+            for (String blobID : addStageMaptageMap.keySet()) {
+                pathToBlobID.put(addStageMaptageMap.get(blobID), blobID);
             }
         }
-        if (remove_stage_map.size() != 0) {
-            for (String blob_id : remove_stage_map.keySet()) {
-                pathToBlobID.remove(remove_stage_map.get(blob_id));
+        if (removeStageMap.size() != 0) {
+            for (String blob_id : removeStageMap.keySet()) {
+                pathToBlobID.remove(removeStageMap.get(blob_id));
             }
         }
         return pathToBlobID;
@@ -254,21 +250,22 @@ public class Repository {
         Blob rmBlob = stageBlob != null ? stageBlob : getTrackedBlobByName(fileName);
         if (rmBlob == null) {
             exit("No reason to remove the file.");
-        } rmBlob.save();
+        }
+        rmBlob.save();
         Commit curCommit = readCurCommit();
         // 1.check Addition folder
         if (addStage.ifContains(rmBlob)) {
             addStage.delete(rmBlob);
-        }
-        // 2.check file_name is tracked by current commit
-        else if (curCommit.getPathToBlobID().containsKey(rmBlob.getBlobPath())) {
+        } else if (curCommit.getPathToBlobID().containsKey(rmBlob.getBlobPath())) {
+            // 2.check file_name is tracked by current commit
             Blob trackedBlob = getTrackedBlobByName(fileName);
             removeStage.addBlobInMap(trackedBlob.getBlobId(), trackedBlob.getBlobPath());
             // remove file if it is in CWD
             File cwdFile = searchFile(CWD, fileName);
-            if (cwdFile != null) { cwdFile.delete(); }
+            if (cwdFile != null) {
+                cwdFile.delete();
+            }
         }
-
         // save
         addStage.saveAddStage();
         removeStage.saveRemoveStage();
@@ -289,7 +286,7 @@ public class Repository {
         Commit curCommit = readCurCommit();
         List<String> history = curCommit.getParents();
         curCommit.print();
-        while (!history.isEmpty()) {
+        while(!history.isEmpty()) {
             String parentID = history.get(history.size() - 1);
             Commit parentCommit = getCommitByID(parentID);
             parentCommit.print();
@@ -328,7 +325,9 @@ public class Repository {
                 ifFound = true;
             }
         }
-        if (!ifFound) {exit("Found no commit with that message.");}
+        if (!ifFound) {
+            exit("Found no commit with that message.");
+        }
     }
 
     /** status
@@ -381,8 +380,8 @@ public class Repository {
     public static List<String> calModifiedButNotStage() {
         List<String> modifiedNotStageFiles = new ArrayList<>();
         Commit cur_commit = readCurCommit();
-        Stage addStage = readAddStage();
-        Stage removeStage = readRemoveStage();
+        addStage = readAddStage();
+        removeStage = readRemoveStage();
         Set<Blob> curCommitBlobSet = new HashSet<>(cur_commit.getBlobList());
         Set<Blob> addStagedBlobSet = new HashSet<>(addStage.getBlobList());
         Set<Blob> removeStageBlobSet = new HashSet<>(removeStage.getBlobList());
@@ -467,13 +466,7 @@ public class Repository {
      */
     public static void checkoutFromCommit(String commitID, String fileName) {
         // handle the abbrev from of commitID
-        Commit checkedCommit = getCommitByID(commitID);
-        if (checkedCommit == null) {
-            String fullCommitID = getCommitIDByAbbreb(commitID);
-            if (fullCommitID != null) {
-                checkedCommit = getCommitByID(fullCommitID);
-            }
-        }
+        Commit checkedCommit = getCommitByAbbrevID(commitID);
         if (checkedCommit == null) {
             exit("No commit with that id exists.");
         }
@@ -491,6 +484,17 @@ public class Repository {
         if (!ifFileFound) {
             exit("File does not exist in that commit.");
         }
+    }
+
+    private static Commit getCommitByAbbrevID(String commitID) {
+        Commit checkedCommit = getCommitByID(commitID);
+        if (checkedCommit == null) {
+            String fullCommitID = getCommitIDByAbbreb(commitID);
+            if (fullCommitID != null) {
+                checkedCommit = getCommitByID(fullCommitID);
+            }
+        }
+        return checkedCommit;
     }
 
     /** Takes all files in the commit at the head of the given branch,
@@ -611,7 +615,10 @@ public class Repository {
      *  The command is essentially checkout of an arbitrary commit that also changes the current branch head.
      */
     public static void reset(String commitID) {
-        Commit checkedCommit = getCommitByID(commitID);
+        if (!checkIfFilesTracked()) {
+            exit("There is an untracked file in the way; delete it, or add and commit it first.");
+        }
+        Commit checkedCommit = getCommitByAbbrevID(commitID);
         if (checkedCommit == null) {
             exit("No commit with that id exists.");
         }
