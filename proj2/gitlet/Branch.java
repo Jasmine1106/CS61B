@@ -20,14 +20,20 @@ public class Branch {
         return null;
     }
 
-    // creat a new branch, add into BRANCH_DIR.
-    public static File creatBranch(String branch_name) {
-        return join(BRANCH_DIR, branch_name);
-    }
+
 
     // change commit_id in that branch file
     public static void updateBranchPointer(File branch, String commitID) {
         writeContents(branch, commitID);
+    }
+
+    // change commitID in current branch file
+    public static void updateCurBranchPointer(String commitID) {
+        String curBranchName = readContentsAsString(BRANCH);
+        File curBranchFile = getBranchFileByName(curBranchName);
+        if (curBranchFile != null && curBranchFile.isFile()) {
+            writeContents(curBranchFile, commitID);
+        }
     }
 
     // BRANCH store the branch name of current branch

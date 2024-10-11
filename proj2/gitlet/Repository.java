@@ -4,7 +4,6 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import java.util.*;
 import static gitlet.Utils.*;
@@ -171,11 +170,14 @@ public class Repository {
         Commit newCommit = new Commit(message, parents, pathToBlobID );
         saveNewCommit(newCommit);
 
+
     }
     private static void saveNewCommit(Commit new_commit) {
         // save commit object and HEAD
         new_commit.save();
         saveHEAD(new_commit.getCommitID());
+        // update current branch pointer
+        Branch.updateCurBranchPointer(new_commit.getCommitID());
         // reset stage area
         addStage.clear();
         removeStage.clear();
@@ -501,34 +503,15 @@ public class Repository {
         // if has sth untracked
         if (!checkIfFilesTracked()) { exit("There is an untracked file in the way; delete it, or add and commit it first.");}
         // above is code is do some checking
-        String commitID = readContentsAsString(branchFile);
-        updateCWDAfterCheckout(commitID);
+        clearCWD();
+        String branchHeadCommitID = readContentsAsString(branchFile);
+        updateCWDFromCommit(branchHeadCommitID);
         Branch.updateCurBranch(branchName);
-        updateHEAD(commitID);
+        updateHEAD(branchHeadCommitID);
         clearStage();        // already saved
     }
 
-    // 3 case
-    private static void updateCWDAfterCheckout(String commitID) {
-        Commit curCommit = readCurCommit();
-        Commit checkedCommit = getCommitByID(commitID);
-        List<Blob> curCommitBlobList = curCommit.getBlobList();
-        List<Blob> checkedCommitBlobList = checkedCommit.getBlobList();
-        File[] cwdFiles = CWD.listFiles();
-        // if new branch untrack  file but current track, delete it
-        if (cwdFiles != null) {
-            for (File cwdFile: cwdFiles) {
-                if (cwdFile.isFile() && !checkedCommitBlobList.contains(new Blob(cwdFile))) {
-                    cwdFile.delete();
-                }
-            }
-            for (Blob blob : checkedCommitBlobList) {
-                File blobFile = join(CWD, blob.getFileName());
-                writeContents(blobFile, blob.getFileContents());
-            }
-        }
 
-    }
 
     private static void updateCWDFromCommit(String commitID) {
         Commit checkedCommit = getCommitByID(commitID);
@@ -536,6 +519,15 @@ public class Repository {
         for (Blob blob : checkedBlobList) {
             writeBlobContentsIntoCWD(blob);
         }
+    }
+
+    private static void writeBlobContentsIntoCWD(Blob blob) {
+        File fileName = join(CWD, blob.getFileName());
+        byte[] fileContent = blob.getFileContents();
+        // DEBUG:
+
+
+        writeContents(fileName,  fileContent);
     }
 
     private static void updateHEAD(String commit_id) {
@@ -552,7 +544,7 @@ public class Repository {
         File[] allCWDFiles = CWD.listFiles();
         if (allCWDFiles != null) {
             for (File file : allCWDFiles) {
-                restrictedDelete(file);
+                file.delete();
             }
         }
     }
@@ -565,12 +557,6 @@ public class Repository {
         removeStage.clear();
         addStage.saveAddStage();
         removeStage.saveRemoveStage();
-    }
-
-    private static void writeBlobContentsIntoCWD(Blob blob) {
-        File fileName = join(CWD, blob.getFileName());
-        byte[] fileContent = blob.getFileContents();
-        writeContents(fileName,  fileContent);
     }
 
 
@@ -618,7 +604,8 @@ public class Repository {
         if (checkedCommit == null) {
             exit("No commit with that id exists.");
         }
-        updateCWDAfterCheckout(commitID);
+        clearCWD();
+        updateCWDFromCommit(commitID);
         Branch.updateBranchPointer(BRANCH, commitID);
         clearStage();
     }
