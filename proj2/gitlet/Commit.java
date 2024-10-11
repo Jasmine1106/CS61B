@@ -87,7 +87,7 @@ public class Commit implements Serializable {
     }
 
     // get a commit object from commitID
-    public static Commit fromFile(String commitId) {
+    public static Commit getCommitByID(String commitId) {
         File commitFile = join(COMMIT_DIR, commitId);
         if (!commitFile.exists()) {
             exit("No commit with that id exists.");

@@ -60,7 +60,6 @@ public class Repository {
 
 
 
-    /* TODO: fill in the rest of this class. */
     // Does require filesystem operations to allow for persistence.
 
     /** init
@@ -187,7 +186,7 @@ public class Repository {
     // return current commit object
     public static Commit readCurCommit() {
         String commitID = readContentsAsString(HEAD);
-        return fromFile(commitID);
+        return getCommitByID(commitID);
     }
 
     private static Stage readAddStage() {
@@ -296,7 +295,7 @@ public class Repository {
         curCommit.print();
         while (!history.isEmpty()) {
             String parentID = history.get(history.size() - 1);
-            Commit parentCommit = fromFile(parentID);
+            Commit parentCommit = getCommitByID(parentID);
             parentCommit.print();
             history = parentCommit.getParents();
         }
@@ -311,7 +310,7 @@ public class Repository {
     public static void global_log() {
         List<String> commit_list = plainFilenamesIn(COMMIT_DIR);
         for (String commit_id : commit_list) {
-            Commit commit_object = fromFile(commit_id);
+            Commit commit_object = getCommitByID(commit_id);
             commit_object.print();
         }
     }
@@ -327,7 +326,7 @@ public class Repository {
         List<String> commitList = plainFilenamesIn(COMMIT_DIR);
         boolean ifFound = false;
         for (String commitID: commitList) {
-            Commit commit_object = fromFile(commitID);
+            Commit commit_object = getCommitByID(commitID);
             if (commitMessage.equals(commit_object.getMessage())) {
                 System.out.println(commit_object.getCommitID());
                 ifFound = true;
@@ -465,12 +464,13 @@ public class Repository {
      *  overwriting the version of the file that’s already there if there is one. The new version of the file is not staged.
      */
     public static void checkoutFromCommit(String commitID, String fileName) {
-        Commit checkedCommit = fromFile(commitID) != null ? fromFile(commitID) : fromFile(getCommitIDByAbbreb(commitID));
+        // handle the abbrev from of commitID
+        Commit checkedCommit = getCommitByID(commitID) != null ? getCommitByID(commitID) : getCommitByID(getCommitIDByAbbreb(commitID));
         if (checkedCommit == null) {
             exit("No commit with that id exists.");
         }
-        boolean ifFileFound = false;
         List<Blob> blobList = checkedCommit.getBlobList();
+        boolean ifFileFound = false;
         if (!blobList.isEmpty()) {
             for (Blob blob : blobList) {
                 if (blob.getFileName().equals(fileName)) {
@@ -495,23 +495,43 @@ public class Repository {
         if (readCurBranch().equals(branchName)) {
             exit("No need to checkout the current branch.");
         }
-        // search BranchDIR
+        // search BranchDIR if branchName exist
         File branchFile = Branch.getBranchFileByName(branchName);
-        // if branch_name doesn't exist
         if (branchFile == null) { exit("No such branch exists.");}
         // if has sth untracked
         if (!checkIfFilesTracked()) { exit("There is an untracked file in the way; delete it, or add and commit it first.");}
         // above is code is do some checking
-        clearCWD();
         String commitID = readContentsAsString(branchFile);
-        updateCWDFromCommit(commitID);
+        updateCWDAfterCheckout(commitID);
         Branch.updateCurBranch(branchName);
         updateHEAD(commitID);
         clearStage();        // already saved
     }
 
+    // 3 case
+    private static void updateCWDAfterCheckout(String commitID) {
+        Commit curCommit = readCurCommit();
+        Commit checkedCommit = getCommitByID(commitID);
+        List<Blob> curCommitBlobList = curCommit.getBlobList();
+        List<Blob> checkedCommitBlobList = checkedCommit.getBlobList();
+        File[] cwdFiles = CWD.listFiles();
+        // if new branch untrack  file but current track, delete it
+        if (cwdFiles != null) {
+            for (File cwdFile: cwdFiles) {
+                if (cwdFile.isFile() && !checkedCommitBlobList.contains(new Blob(cwdFile))) {
+                    cwdFile.delete();
+                }
+            }
+            for (Blob blob : checkedCommitBlobList) {
+                File blobFile = join(CWD, blob.getFileName());
+                writeContents(blobFile, blob.getFileContents());
+            }
+        }
+
+    }
+
     private static void updateCWDFromCommit(String commitID) {
-        Commit checkedCommit = fromFile(commitID);
+        Commit checkedCommit = getCommitByID(commitID);
         List<Blob> checkedBlobList = checkedCommit.getBlobList();
         for (Blob blob : checkedBlobList) {
             writeBlobContentsIntoCWD(blob);
@@ -550,8 +570,7 @@ public class Repository {
     private static void writeBlobContentsIntoCWD(Blob blob) {
         File fileName = join(CWD, blob.getFileName());
         byte[] fileContent = blob.getFileContents();
-        writeContents(fileName, new String(fileContent, StandardCharsets.UTF_8));
-
+        writeContents(fileName,  fileContent);
     }
 
 
@@ -595,12 +614,11 @@ public class Repository {
      *  The command is essentially checkout of an arbitrary commit that also changes the current branch head.
      */
     public static void reset(String commitID) {
-        Commit checkedCommit = fromFile(commitID);
+        Commit checkedCommit = getCommitByID(commitID);
         if (checkedCommit == null) {
             exit("No commit with that id exists.");
         }
-        clearCWD();
-        updateCWDFromCommit(commitID);
+        updateCWDAfterCheckout(commitID);
         Branch.updateBranchPointer(BRANCH, commitID);
         clearStage();
     }
