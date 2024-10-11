@@ -242,29 +242,29 @@ class Utils {
 
     /** some statichelper mathod i wrote ----*/
 
-    // search file_name in director recursively ,return the file object ,or null if not found.
-    public static File searchFile (File directory, String file_name) {
+    // search fileName in director recursively ,return the file object ,or null if not found.
+    public static File searchFile(File directory, String fileName) {
         File[] files = directory.listFiles();
         for (File file : files) {
-            if (file.getName().equals(file_name)) {
+            if (file.getName().equals(fileName)) {
                 return file;
             }
-            if (file.isDirectory()){
-                searchFile(file, file_name);
+            if (file.isDirectory()) {
+                searchFile(file, fileName);
             }
         }
         return null;
     }
 
-    public static void exit (String message, Object... args) {
+    public static void exit(String message, Object... args) {
         message(message, args);
         System.exit(0);
     }
 
     // retrive a blob by its id
-    public static Blob getBlobByID(String blob_id) {
-        File BlobFile = join(Repository.BLOB_DIR, blob_id);
-        return readObject(BlobFile, Blob.class);
+    public static Blob getBlobByID(String blobID) {
+        File blobFile = join(Repository.BLOB_DIR, blobID);
+        return readObject(blobFile, Blob.class);
     }
 
     // pass in a file name and return the current commit corresponding blob object

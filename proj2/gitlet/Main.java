@@ -96,7 +96,7 @@ public class Main {
                 case "global-log":
                     validateNumArgs(firstArg, args, 1);
                     checkIfInited();
-                    Repository.global_log();
+                    Repository.globalLog();
                     break;
                 case "find":
                     validateNumArgs(firstArg, args, 2);

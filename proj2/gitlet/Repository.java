@@ -119,7 +119,7 @@ public class Repository {
         // can't add trcked file
         if (!curCommit.getBlobList().contains(blob)) {
             addStage.addBlobInMap(blob.getBlobId(), blob.getBlobPath());
-        } else if(removeStage.ifContains(blob)) {
+        } else if (removeStage.ifContains(blob)) {
             removeStage.delete(blob);
         }
         // save
@@ -136,8 +136,8 @@ public class Repository {
      *  its parent commit’s snapshot of files; it will keep versions of files exactly
      *  as they are, and not update them.
      *  A commit will only update the contents of files it is tracking that have been staged
-     *  for addition at the time of commit, in which case the commit will now
-     *  include the version of the file that was staged instead of the version it got from its parent.
+     *  for addition at the time of commit, in which case the commit will now include the
+     *  version of the file that was staged instead of the version it got from its parent.
      *  A commit will save and start tracking any files that were staged for addition
      *  but weren’t tracked by its parent. Finally, files tracked in the current commit
      *  may be untracked in the new commit as a result being staged for removal by  rm.
@@ -157,15 +157,15 @@ public class Repository {
         // update pathToBlobID
         Map<String, String> pathToBlobID = updatePathToBlobID(parentCommit);
         // create new commit and save it
-        Commit newCommit = new Commit(message, parents, pathToBlobID );
+        Commit newCommit = new Commit(message, parents, pathToBlobID);
         saveNewCommit(newCommit);
     }
-    private static void saveNewCommit(Commit new_commit) {
+    private static void saveNewCommit(Commit newCommit) {
         // save commit object and HEAD
-        new_commit.save();
-        saveHEAD(new_commit.getCommitID());
+        newCommit.save();
+        saveHEAD(newCommit.getCommitID());
         // update current branch pointer
-        Branch.updateCurBranchPointer(new_commit.getCommitID());
+        Branch.updateCurBranchPointer(newCommit.getCommitID());
         // reset stage area
         addStage.clear();
         removeStage.clear();
@@ -209,8 +209,8 @@ public class Repository {
             }
         }
         if (removeStageMap.size() != 0) {
-            for (String blob_id : removeStageMap.keySet()) {
-                pathToBlobID.remove(removeStageMap.get(blob_id));
+            for (String blobID : removeStageMap.keySet()) {
+                pathToBlobID.remove(removeStageMap.get(blobID));
             }
         }
         return pathToBlobID;
@@ -228,8 +228,8 @@ public class Repository {
     private static Map<String, String> calRemoveStageMap() {
         removeStage = readRemoveStage();
         Map<String, String> removeSrageMap = new TreeMap<>();
-        List<Blob> remove_stage_blob = removeStage.getBlobList();
-        for (Blob blob : remove_stage_blob) {
+        List<Blob> removeStageBlob = removeStage.getBlobList();
+        for (Blob blob : removeStageBlob) {
             removeSrageMap.put(blob.getBlobId(), blob.getBlobPath());
         }
         return removeSrageMap;
@@ -282,11 +282,11 @@ public class Repository {
      *  For every node in this history, the information it should display is the commit id,
      *  the time the commit was made, and the commit message.
      * */
-    public static void log () {
+    public static void log() {
         Commit curCommit = readCurCommit();
         List<String> history = curCommit.getParents();
         curCommit.print();
-        while(!history.isEmpty()) {
+        while (!history.isEmpty()) {
             String parentID = history.get(history.size() - 1);
             Commit parentCommit = getCommitByID(parentID);
             parentCommit.print();
@@ -300,10 +300,10 @@ public class Repository {
      *  Like log, except displays information about all commits ever made.
      *  The order of the commits does not matter.
      * */
-    public static void global_log() {
-        List<String> commit_list = plainFilenamesIn(COMMIT_DIR);
-        for (String commit_id : commit_list) {
-            Commit commit_object = getCommitByID(commit_id);
+    public static void globalLog() {
+        List<String> commitList = plainFilenamesIn(COMMIT_DIR);
+        for (String commitID : commitList) {
+            Commit commit_object = getCommitByID(commitID);
             commit_object.print();
         }
     }
@@ -341,20 +341,20 @@ public class Repository {
         List<String> branchesList = plainFilenamesIn(BRANCH_DIR);
         System.out.println("=== Branches ===");
         System.out.println("*" + curBranch);
-        for (String branch_name : branchesList) {
-            if (branch_name.equals(curBranch)) {
+        for (String branchName : branchesList) {
+            if (branchName.equals(curBranch)) {
                 continue;
             }
-            System.out.println(branch_name);
+            System.out.println(branchName);
         }
-        Stage add_stage = readAddStage();
-        Stage remove_stage = readRemoveStage();
+        Stage addStage = readAddStage();
+        Stage removeStage = readRemoveStage();
         System.out.println();
         System.out.println("=== Staged Files ===");
-        add_stage.printBlobsName();
+        addStage.printBlobsName();
         System.out.println();
         System.out.println("=== Removed Files ===");
-        remove_stage.printBlobsName();
+        removeStage.printBlobsName();
         System.out.println();
         System.out.println("=== Modifications Not Staged For Commit ===");
         List<String> modNotStage = calModifiedButNotStage();
@@ -374,28 +374,30 @@ public class Repository {
      *  Tracked in the current commit, changed in the working directory, but not staged; or
      *  Staged for addition, but with different contents than in the working directory; or
      *  Staged for addition, but deleted in the working directory; or
-     *  Not staged for removal, but tracked in the current commit and deleted from the working directory.
+     *  Not staged for removal, but tracked in the current commit and
+     *  deleted from the working directory.
      *
      *  */
     public static List<String> calModifiedButNotStage() {
         List<String> modifiedNotStageFiles = new ArrayList<>();
-        Commit cur_commit = readCurCommit();
+        Commit curCommit = readCurCommit();
         addStage = readAddStage();
         removeStage = readRemoveStage();
-        Set<Blob> curCommitBlobSet = new HashSet<>(cur_commit.getBlobList());
+        Set<Blob> curCommitBlobSet = new HashSet<>(curCommit.getBlobList());
         Set<Blob> addStagedBlobSet = new HashSet<>(addStage.getBlobList());
         Set<Blob> removeStageBlobSet = new HashSet<>(removeStage.getBlobList());
 
         for (Blob blob: curCommitBlobSet) {
             File fileInCWD = join(CWD, blob.getFileName());
             // 1. search Blob_dir, uneaqul version in CWD, not in staged(modified)
-            if (!addStagedBlobSet.contains(blob) && !removeStageBlobSet.contains(blob)
-                    &&fileInCWD.isFile()) {
-                    byte[] CWDFileContents = readContents(fileInCWD);
-                    if (!Arrays.equals(CWDFileContents, blob.getFileContents())) {
-                         modifiedNotStageFiles.add(blob.getFileName() + "(modified)");
-                    }
+            if (!addStagedBlobSet.contains(blob)&&
+                !removeStageBlobSet.contains(blob)&&
+                fileInCWD.isFile()) {
+                byte[] cwdFileContents = readContents(fileInCWD);
+                if (!Arrays.equals(cwdFileContents, blob.getFileContents())) {
+                    modifiedNotStageFiles.add(blob.getFileName() + "(modified)");
                 }
+            }
             // 4. Blob_dir, not in CWD, not staged for removal(deleted)
             if (!removeStageBlobSet.contains(blob) && !fileInCWD.exists()) {
                 modifiedNotStageFiles.add(blob.getFileName() + "(deleted)");
@@ -424,16 +426,18 @@ public class Repository {
      *  */
     public static List<String> calUntracked() {
         List<String> untrackedFiles = new ArrayList<>();
-        Stage addStage = readAddStage();
+        addStage = readAddStage();
         Set<Blob> addStageBlobSset = new HashSet<>(addStage.getBlobList());
         Set<Blob> historyTrackedBlobsSet = new HashSet<>(getTrackedBlobList());
         File[] cwdFiles = CWD.listFiles();
 
         if (cwdFiles != null) {
             for (File file : cwdFiles) {
-                if (file.isFile()) { // check file isn't a directory or other special file
+                if (file.isFile()) {
+                    // check file isn't a directory or other special file
                     Blob blob = new Blob(file);
-                    if (!historyTrackedBlobsSet.contains(blob) && !addStageBlobSset.contains(blob)) {
+                    if (!historyTrackedBlobsSet.contains(blob)&&
+                        !addStageBlobSset.contains(blob)) {
                         untrackedFiles.add(file.getName());
                     }
                 }
@@ -454,9 +458,9 @@ public class Repository {
      *  overwriting the version of the file that’s already there if there is one.
      *  The new version of the file is not staged.
      */
-    public static void checkoutFromHEAD(String file_name) {
-        Commit cur_commit = readCurCommit();
-        checkoutFromCommit(cur_commit.getCommitID(), file_name);
+    public static void checkoutFromHEAD(String fileName) {
+        Commit curCommit = readCurCommit();
+        checkoutFromCommit(curCommit.getCommitID(), fileName);
     }
 
     /** Takes the version of the file as it exists in the commit with the given id,
@@ -500,7 +504,7 @@ public class Repository {
     /** Takes all files in the commit at the head of the given branch,
      *  and puts them in the working directory,
      *  overwriting the versions of the files that are already there if they exist.
-     *  Also, at the end of this command, the given branch will now be considered the current branch (HEAD).
+     *  Also, at the end of this command, the given branch will now be considered as HEAD.
      *  Any files that are tracked in the current branch
      *  but are not present in the checked-out branch are deleted.
      *  The staging area is cleared, unless the checked-out branch is the current branch
