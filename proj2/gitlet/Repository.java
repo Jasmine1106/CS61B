@@ -617,7 +617,8 @@ public class Repository {
         }
         clearCWD();
         updateCWDFromCommit(commitID);
-        Branch.updateBranchPointer(BRANCH, commitID);
+        Branch.updateCurBranchPointer(commitID);
+        updateHEAD(commitID);
         clearStage();
     }
 
