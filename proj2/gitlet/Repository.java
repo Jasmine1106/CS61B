@@ -303,8 +303,8 @@ public class Repository {
     public static void globalLog() {
         List<String> commitList = plainFilenamesIn(COMMIT_DIR);
         for (String commitID : commitList) {
-            Commit commit_object = getCommitByID(commitID);
-            commit_object.print();
+            Commit commitObject = getCommitByID(commitID);
+            commitObject.print();
         }
     }
 
@@ -347,8 +347,8 @@ public class Repository {
             }
             System.out.println(branchName);
         }
-        Stage addStage = readAddStage();
-        Stage removeStage = readRemoveStage();
+        addStage = readAddStage();
+        removeStage = readRemoveStage();
         System.out.println();
         System.out.println("=== Staged Files ===");
         addStage.printBlobsName();
@@ -390,8 +390,8 @@ public class Repository {
         for (Blob blob: curCommitBlobSet) {
             File fileInCWD = join(CWD, blob.getFileName());
             // 1. search Blob_dir, uneaqul version in CWD, not in staged(modified)
-            if (!addStagedBlobSet.contains(blob)&&
-                !removeStageBlobSet.contains(blob)&&
+            if (!addStagedBlobSet.contains(blob) &&
+                !removeStageBlobSet.contains(blob) &&
                 fileInCWD.isFile()) {
                 byte[] cwdFileContents = readContents(fileInCWD);
                 if (!Arrays.equals(cwdFileContents, blob.getFileContents())) {
@@ -408,8 +408,8 @@ public class Repository {
         for (Blob blob : addStagedBlobSet) {
             File fileInCWD = join(CWD, blob.getFileName());
             if (fileInCWD.exists()) {
-                byte[] CWDFileContents = readContents(fileInCWD);
-                if (!Arrays.equals(CWDFileContents, blob.getFileContents())) {
+                byte[] cwdFileContents = readContents(fileInCWD);
+                if (!Arrays.equals(cwdFileContents, blob.getFileContents())) {
                     modifiedNotStageFiles.add(blob.getFileName() + "(modified)");
                 }
             } else {
@@ -436,7 +436,7 @@ public class Repository {
                 if (file.isFile()) {
                     // check file isn't a directory or other special file
                     Blob blob = new Blob(file);
-                    if (!historyTrackedBlobsSet.contains(blob)&&
+                    if (!historyTrackedBlobsSet.contains(blob) &&
                         !addStageBlobSset.contains(blob)) {
                         untrackedFiles.add(file.getName());
                     }
@@ -454,7 +454,8 @@ public class Repository {
      *  3.checkout [branch name]
      * */
 
-    /** Takes the version of the file as it exists in the head commit and puts it in the working directory,
+    /** Takes the version of the file as it exists in the head commit
+     *  and puts it in the working directory,
      *  overwriting the version of the file that’s already there if there is one.
      *  The new version of the file is not staged.
      */
@@ -515,7 +516,9 @@ public class Repository {
         }
         // search BranchDIR if branchName exist
         File branchFile = Branch.getBranchFileByName(branchName);
-        if (branchFile == null) { exit("No such branch exists.");}
+        if (branchFile == null) {
+            exit("No such branch exists.");
+        }
         // if has sth untracked
         if (!checkIfFilesTracked()) {
             exit("There is an untracked file in the way; delete it, or add and commit it first.");
@@ -543,18 +546,20 @@ public class Repository {
         File fileName = join(CWD, blob.getFileName());
         byte[] fileContent = blob.getFileContents();
         // DEBUG:
-        writeContents(fileName,  fileContent);
+        writeContents(fileName, fileContent);
     }
 
-    private static void updateHEAD(String commit_id) {
-        writeContents(HEAD, commit_id);
+    private static void updateHEAD(String commitID) {
+        writeContents(HEAD, commitID);
     }
 
     private static String readCurBranch() {
         return readContentsAsString(BRANCH);
     }
 
-    private static boolean checkIfFilesTracked () { return calUntracked().isEmpty();}
+    private static boolean checkIfFilesTracked () {
+        return calUntracked().isEmpty();
+    }
 
     private static void clearCWD() {
         File[] allCWDFiles = CWD.listFiles();
@@ -567,8 +572,8 @@ public class Repository {
 
 
     private static void clearStage() {
-        Stage addStage = readAddStage();
-        Stage removeStage = readRemoveStage();
+        addStage = readAddStage();
+        removeStage = readRemoveStage();
         addStage.clear();
         removeStage.clear();
         addStage.saveAddStage();
@@ -579,8 +584,8 @@ public class Repository {
     /** branch [branch name]
      *  Creates a new branch with the given name, and points it at the current head commit.
      *  A branch is nothing more than a name for a reference (a SHA-1 identifier) to a commit node.
-     *  This command does NOT immediately switch to the newly created branch (just as in real Git).
-     *  Before you ever call branch, your code should be running with a default branch called “master”.
+     *  This command does NOT immediately switch to the newly created branch (as in real Git).
+     *  Before you ever call branch, you should be running with a default branch called “master”.
      * */
     public static void branch(String branchName) {
         String curCommitID = readCurCommit().getCommitID();
@@ -598,7 +603,7 @@ public class Repository {
      *  or anything like that.
      */
 
-    public static void rm_branch(String branchName) {
+    public static void rmBranch(String branchName) {
         String curBranch = readContentsAsString(BRANCH);
         if (branchName.equals(curBranch)) {
             exit("Cannot remove the current branch.");
@@ -616,7 +621,8 @@ public class Repository {
      *  Also moves the current branch’s head to that commit node.
      *  See the intro for an example of what happens to the head pointer after using reset.
      *  The [commit id] may be abbreviated as for checkout. The staging area is cleared.
-     *  The command is essentially checkout of an arbitrary commit that also changes the current branch head.
+     *  The command is essentially checkout of an arbitrary commit that
+     *  also changes the current branch head.
      */
     public static void reset(String commitID) {
         if (!checkIfFilesTracked()) {

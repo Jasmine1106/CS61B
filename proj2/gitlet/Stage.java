@@ -67,8 +67,8 @@ public class Stage  implements Serializable {
 
 
     // put a new blob into add_stage
-    public void addBlobInMap(String blob_id, String blob_path) {
-        blobIdToPath.put(blob_id, blob_path);
+    public void addBlobInMap(String blobID, String blobPath) {
+        blobIdToPath.put(blobID, blobPath);
     }
 
     public void saveAddStage() {
@@ -102,9 +102,9 @@ public class Stage  implements Serializable {
 
     // Dicitionaries order
     public void printBlobsName() {
-        List<String> StagedBlobs = this.getBlobNameList();
-        Collections.sort(StagedBlobs);
-        for (String blobName : StagedBlobs) {
+        List<String> stagedBlobs = this.getBlobNameList();
+        Collections.sort(stagedBlobs);
+        for (String blobName : stagedBlobs) {
             System.out.println(blobName);
         }
     }

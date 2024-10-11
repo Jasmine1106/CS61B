@@ -129,7 +129,7 @@ public class Main {
                 case "rm-branch":
                     validateNumArgs(firstArg, args, 2);
                     checkIfInited();
-                    Repository.rm_branch(args[1]);
+                    Repository.rmBranch(args[1]);
                     break;
                 case "reset":
                     validateNumArgs(firstArg, args, 2);
