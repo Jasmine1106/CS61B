@@ -132,7 +132,11 @@ public class Commit implements Serializable {
      * ask GPT how to get rid of : between 08:00
      */
     private static String formatTimestamp(ZonedDateTime dateTime) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy Z", Locale.ENGLISH);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
+                "EEE MMM dd" +
+                        "HH:mm:ss" +
+                        "yyyy Z",
+                        Locale.ENGLISH);
         String formatted = dateTime.format(formatter);
         return formatted.replaceAll("([+-]\\d{2}):?(\\d{2})", "$1$2");
     }

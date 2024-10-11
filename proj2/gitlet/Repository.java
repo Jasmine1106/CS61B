@@ -40,18 +40,18 @@ public class Repository {
     /** the first floor of the directory*/
     private static final File OBJECT_DIR = join(GITLET_DIR, "OBJECT_DIR");
     private static final File STAGE_DIR = join(GITLET_DIR, "STAGE_DIR");
-    public static File BRANCH_DIR = join(GITLET_DIR, "BRANCH_DIR");
-    public static File HEAD = join(GITLET_DIR, "HEAD");
-    public static File BRANCH = join(GITLET_DIR, "BRANCH");
+    static File BRANCH_DIR = join(GITLET_DIR, "BRANCH_DIR");
+    static File HEAD = join(GITLET_DIR, "HEAD");
+    static File BRANCH = join(GITLET_DIR, "BRANCH");
     /** the second floor of the directory*/
-    public static File BLOB_DIR = join(OBJECT_DIR, "BLOB_DIR");
-    public static File COMMIT_DIR = join(OBJECT_DIR, "COMMIT_DIR");
-    public static File ADDITION = join(STAGE_DIR, "ADDITION");
-    public static File REMOVAL = join(STAGE_DIR, "REMOVAL");
+    static File BLOB_DIR = join(OBJECT_DIR, "BLOB_DIR");
+    static File COMMIT_DIR = join(OBJECT_DIR, "COMMIT_DIR");
+    static File ADDITION = join(STAGE_DIR, "ADDITION");
+    static File REMOVAL = join(STAGE_DIR, "REMOVAL");
 
     // instance variable
-    public static Stage addStage = new Stage();      // add stage
-    public static Stage removeStage = new Stage();  // remove stage
+    static Stage addStage = new Stage();      // add stage
+    static Stage removeStage = new Stage();  // remove stage
 
 
 
