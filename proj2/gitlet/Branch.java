@@ -20,8 +20,6 @@ public class Branch {
         return null;
     }
 
-
-
     // change commit_id in that branch file
     public static void updateBranchPointer(File branch, String commitID) {
         writeContents(branch, commitID);
@@ -41,5 +39,18 @@ public class Branch {
         writeContents(BRANCH, branchName);
     }
 
+    public static String getCurBranchName() {
+        return readContentsAsString(BRANCH);
+    }
+
+    // get the head commit in that spec branch
+    public static Commit getBranchHead(String branchName) {
+        File branchFile = getBranchFileByName(branchName);
+        if (branchFile != null) {
+            String HeadID = readContentsAsString(branchFile);
+            return Commit.getCommitByID(HeadID);
+        }
+        return null;
+    }
 
 }

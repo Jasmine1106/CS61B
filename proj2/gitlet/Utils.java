@@ -269,7 +269,7 @@ class Utils {
 
     // pass in a file name and return the current commit corresponding blob object
     public static Blob getTrackedBlobByName(String fileName) {
-        Commit curCommit = Repository.readCurCommit();
+        Commit curCommit = Repository.getCurCommit();
         List<Blob> blobsList = curCommit.getBlobList();
         for (Blob b : blobsList) {
             if (b.getFileName().equals(fileName)) {
