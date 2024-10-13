@@ -695,6 +695,7 @@ public class Repository {
                 String fileName = entry.getValue();
                 byte[] curBranchFileContents = getBlobContentsByFileName(curBranchHeadCommit, fileName);
                 byte[] givenBranchFileContents = getBlobContentsByFileName(givenBranchHeadCommit, fileName);
+                byte[] spiltFileContents = getBlobContentsByFileName(splitPointCommit, fileName);
                 byte[] mergedFileContents = mergeConflictFile(curBranchFileContents, givenBranchFileContents);
 
                 if (spiltPointFileMap.containsKey(blobID)
@@ -711,6 +712,7 @@ public class Repository {
                 && !curBranchFileMap.containsKey(blobID)
                 && !givenBranchFileMap.containsKey(blobID)) {
                     // start deal with conflict case
+                    // this case is both branches contents are changed from spiltCommit
                     if (!Arrays.equals(curBranchFileContents,givenBranchFileContents)) {
                         File curbranchFile = getBlobByFileName(curBranchHeadCommit, fileName).getSourceFile();
                         writeContents(curbranchFile, mergedFileContents);
@@ -722,6 +724,7 @@ public class Repository {
                         && !givenBranchFileMap.containsKey(blobID)) {
                     if (curBranchFileContents != null
                             && givenBranchFileContents != null
+                            && spiltFileContents == null
                             && !Arrays.equals(curBranchFileContents, givenBranchFileContents)) {
                         File curbranchFile = getBlobByFileName(curBranchHeadCommit, fileName).getSourceFile();
                         writeContents(curbranchFile, mergedFileContents);
@@ -730,6 +733,7 @@ public class Repository {
                     }
                 } else if (!spiltPointFileMap.containsKey(blobID)
                         && !curBranchFileMap.containsKey(blobID)
+                        && spiltFileContents == null
                         && givenBranchFileMap.containsKey(blobID)) {
                     if (curBranchFileContents != null
                             && givenBranchFileContents != null
