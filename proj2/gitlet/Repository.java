@@ -709,10 +709,6 @@ public class Repository {
                     }
                 } else if (spiltPointFileMap.containsKey(blobID)
                 && !curBranchFileMap.containsKey(blobID)
-                && givenBranchFileMap.containsKey(blobID)) {
-                    continue; // no matter the file is changed or deleted, just keep the same
-                } else if (spiltPointFileMap.containsKey(blobID)
-                && !curBranchFileMap.containsKey(blobID)
                 && !givenBranchFileMap.containsKey(blobID)) {
                     // start deal with conflict case
                     if (!Arrays.equals(curBranchFileContents,givenBranchFileContents)) {
