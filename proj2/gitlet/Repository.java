@@ -720,9 +720,9 @@ public class Repository {
                 } else if (!spiltPointFileMap.containsKey(blobID)
                         && curBranchFileMap.containsKey(blobID)
                         && !givenBranchFileMap.containsKey(blobID)) {
-                    if (!Arrays.equals(curBranchFileContents, givenBranchFileContents)
-                            && curBranchFileContents != null
-                            && givenBranchFileContents != null) {
+                    if (curBranchFileContents != null
+                            && givenBranchFileContents != null
+                            && !Arrays.equals(curBranchFileContents, givenBranchFileContents)) {
                         File curbranchFile = getBlobByFileName(curBranchHeadCommit, fileName).getSourceFile();
                         writeContents(curbranchFile, mergedFileContents);
                         add(fileName);
@@ -731,9 +731,9 @@ public class Repository {
                 } else if (!spiltPointFileMap.containsKey(blobID)
                         && !curBranchFileMap.containsKey(blobID)
                         && givenBranchFileMap.containsKey(blobID)) {
-                    if (!Arrays.equals(curBranchFileContents, givenBranchFileContents)
-                            && curBranchFileContents != null
-                            && givenBranchFileContents != null) {
+                    if (curBranchFileContents != null
+                            && givenBranchFileContents != null
+                            && !Arrays.equals(curBranchFileContents, givenBranchFileContents)) {
                         File curbranchFile = getBlobByFileName(curBranchHeadCommit, fileName).getSourceFile();
                         writeContents(curbranchFile, mergedFileContents);
                         add(fileName);
