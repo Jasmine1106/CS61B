@@ -193,4 +193,21 @@ public class Commit implements Serializable {
         return  reverseHistory;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof Commit)) {
+            return false;
+        }
+       Commit other = (Commit) obj;
+        return this.commitID.equals(other.commitID);
+    }
+
+    @Override
+    public int hashCode() {
+        return commitID.hashCode();
+    }
+
 }
