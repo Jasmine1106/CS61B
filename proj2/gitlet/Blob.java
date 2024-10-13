@@ -72,9 +72,10 @@ public class Blob implements Serializable {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof Blob other)) {
+        if (!(obj instanceof Blob)) {
             return false;
         }
+        Blob other = (Blob) obj;
         return this.blobID.equals(other.blobID);
     }
 

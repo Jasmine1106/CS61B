@@ -210,9 +210,10 @@ public class Commit implements Serializable {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof Commit other)) {
+        if (!(obj instanceof Commit)) {
             return false;
         }
+        Commit other = (Commit) obj;
         return this.commitID.equals(other.commitID);
     }
 
