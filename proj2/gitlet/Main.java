@@ -145,12 +145,10 @@ public class Main {
                 default:
                     System.out.println("No command with that name exists");
             }
-        } catch (Exception e) { // 捕获所有异常
-            e.printStackTrace(); // 打印异常堆栈信息
-            // 可以根据需要添加更详细的错误处理逻辑
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
-
 
     public static void validateNumArgs(String cmd, String[] args, int n) {
         if (args.length != n) {

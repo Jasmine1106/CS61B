@@ -666,10 +666,10 @@ public class Repository {
         Commit curHead = getCurCommit();
         Commit givenHead = getBranchHead(givenBranch);
         Commit splitCommit = getCommitByID(getSpiltCommitID(getCurBranchName(), givenBranch));
-        Map<String, String> curBranchFileMap = getBlobIdToNameMap(curHead);
-        Map<String, String> givenBranchFileMap = getBlobIdToNameMap(givenHead);
-        Map<String, String> spiltPointFileMap = getBlobIdToNameMap(splitCommit);
-        Map<String, String> mergedMap = mergeAllMap(curBranchFileMap, givenBranchFileMap, spiltPointFileMap);
+        Map<String, String> curFileMap = getBlobIdToNameMap(curHead);
+        Map<String, String> givenFileMap = getBlobIdToNameMap(givenHead);
+        Map<String, String> spiltFileMap = getBlobIdToNameMap(splitCommit);
+        Map<String, String> mergedMap = mergeAllMap(curFileMap, givenFileMap, spiltFileMap);
         if (splitCommit.equals(givenHead)) {
             // SAD! painful debug ,forgot to override eaquls of commit object
             exit("Given branch is an ancestor of the current branch.");
@@ -684,17 +684,17 @@ public class Repository {
                 byte[] givenFileContent = getContentsByName(givenHead, fileName);
                 byte[] spiltFileContent = getContentsByName(splitCommit, fileName);
                 byte[] mergedFileContent = mergeFile(curFileContent, givenFileContent);
-                if (spiltPointFileMap.containsKey(blobID)
-                && curBranchFileMap.containsKey(blobID)
-                && !givenBranchFileMap.containsKey(blobID)) {
-                    if (givenBranchFileMap.containsValue(fileName)) { // if file was changed
+                if (spiltFileMap.containsKey(blobID)
+                    && curFileMap.containsKey(blobID)
+                    && !givenFileMap.containsKey(blobID)) {
+                    if (givenFileMap.containsValue(fileName)) { // if file was changed
                         checkoutFromCommit(givenHead.getCommitID(), fileName);
                     } else { // if file was deleted
                         rm(getBlobByID(blobID).getSourceFile().getName());
                     }
-                } else if (spiltPointFileMap.containsKey(blobID)
-                && !curBranchFileMap.containsKey(blobID)
-                && !givenBranchFileMap.containsKey(blobID)) {
+                } else if (spiltFileMap.containsKey(blobID)
+                    && !curFileMap.containsKey(blobID)
+                    && !givenFileMap.containsKey(blobID)) {
                     // start deal with conflict case
                     if (!Arrays.equals(curFileContent, givenFileContent)) {
                         File curbranchFile = getBlobByFileName(curHead, fileName).getSourceFile();
@@ -702,9 +702,9 @@ public class Repository {
                         add(fileName);
                         ifMergeConflict = true;
                     }
-                } else if (!spiltPointFileMap.containsKey(blobID)
-                        && curBranchFileMap.containsKey(blobID)
-                        && !givenBranchFileMap.containsKey(blobID)) {
+                } else if (!spiltFileMap.containsKey(blobID)
+                        && curFileMap.containsKey(blobID)
+                        && !givenFileMap.containsKey(blobID)) {
                     if (curFileContent != null
                             && givenFileContent != null
                             && spiltFileContent == null
@@ -714,10 +714,10 @@ public class Repository {
                         add(fileName);
                         ifMergeConflict = true;
                     }
-                } else if (!spiltPointFileMap.containsKey(blobID)
-                        && !curBranchFileMap.containsKey(blobID)
+                } else if (!spiltFileMap.containsKey(blobID)
+                        && !curFileMap.containsKey(blobID)
                         && spiltFileContent == null
-                        && givenBranchFileMap.containsKey(blobID)) {
+                        && givenFileMap.containsKey(blobID)) {
                     if (curFileContent != null
                             && givenFileContent != null
                             && !Arrays.equals(curFileContent, givenFileContent)) {
@@ -726,7 +726,7 @@ public class Repository {
                         add(fileName);
                         ifMergeConflict = true;
                     } else if (curFileContent == null
-                    && givenFileContent != null) {
+                        && givenFileContent != null) {
                         checkoutFromCommit(givenHead.getCommitID(), fileName);
                         add(fileName);
                     }

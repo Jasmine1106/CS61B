@@ -33,7 +33,6 @@ public class Blob implements Serializable {
         this.blobSavedFile = generateBlobSavedName();
     }
 
-
     public void save() {
         Utils.writeObject(blobSavedFile, this);
     }
@@ -65,7 +64,6 @@ public class Blob implements Serializable {
     private  File generateBlobSavedName()  {
         return join(BLOB_DIR, blobID);
     }
-
 
     @Override
     public boolean equals(Object obj) {

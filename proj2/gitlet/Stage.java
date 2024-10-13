@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
 
-
-
 /** a class that represents the stage for add and rm.
  */
 public class Stage  implements Serializable {

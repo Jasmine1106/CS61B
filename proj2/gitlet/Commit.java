@@ -1,6 +1,5 @@
 package gitlet;
 
-
 import static gitlet.Repository.*;
 import static gitlet.Utils.*;
 import java.io.File;
@@ -10,7 +9,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
-
 
 /** Represents a gitlet commit object.
  *  @author Jasmine1106
@@ -34,7 +32,6 @@ public class Commit implements Serializable {
     private List<String> parents;
     // File storing the commit object
     private final transient File commitFile;
-
 
 
     /** creat a commit object */
@@ -169,8 +166,6 @@ public class Commit implements Serializable {
         System.out.println(message);
         System.out.println();
     }
-
-
 
     public static String getCommitIDByAbbreb(String abbrevCommitID) {
         File[] commitFiles = COMMIT_DIR.listFiles();
