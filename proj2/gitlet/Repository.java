@@ -810,7 +810,11 @@ public class Repository {
     }
 
     private static byte[] getBlobContentsByFileName(Commit commit, String fileName) {
-        return getBlobByFileName(commit, fileName).getFileContents();
+        Blob blob = getBlobByFileName(commit, fileName);
+        if (blob != null) {
+            return blob.getFileContents();
+        }
+        return null;
     }
 
 
