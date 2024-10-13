@@ -145,13 +145,13 @@ public class Repository {
      *  may be untracked in the new commit as a result being staged for removal by  rm.
      */
     public static void commit(String message) {
+        if (stageIsEmpty()) {
+            exit("No changes added to the commit.");
+        }
         commit(message, null);
     }
 
     public static void commit(String message, String mergeCommitID) {
-        if (stageIsEmpty()) {
-            exit("No changes added to the commit.");
-        }
         if (message == null) {
             exit("Please enter a commit message.");
         }
@@ -701,7 +701,6 @@ public class Repository {
                     } else {
                         // if file in given branch was deleted
                         rm(getBlobByID(spiltBlobID).getSourceFile().getName());
-                        // TODO: Untrack this file
                     }
                 } else if (spiltPointFileMap.containsKey(spiltBlobID)
                 && !curBranchFileMap.containsKey(spiltBlobID)
