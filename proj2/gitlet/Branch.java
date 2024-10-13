@@ -47,8 +47,8 @@ public class Branch {
     public static Commit getBranchHead(String branchName) {
         File branchFile = getBranchFileByName(branchName);
         if (branchFile != null) {
-            String HeadID = readContentsAsString(branchFile);
-            return Commit.getCommitByID(HeadID);
+            String headID = readContentsAsString(branchFile);
+            return Commit.getCommitByID(headID);
         }
         return null;
     }

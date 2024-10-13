@@ -444,20 +444,21 @@ public class Repository {
         List<String> untrackedFiles = new LinkedList<>();
         addStage = readAddStage();
         removeStage = readRemoveStage();
-        Set<Blob> addStageBlobset = new HashSet<>(addStage.getBlobList());
-        Set<Blob> removeStageBlobSet = new HashSet<>(removeStage.getBlobList());
-        Set<Blob> historyTrackedBlobsSet = new HashSet<>(getTrackedBlobList());
+        Commit curCommit = getCurCommit();
+        Set<String> addStageNameset = new HashSet<>(addStage.getBlobNameList());
+        Set<String> removeStageNameSet = new HashSet<>(removeStage.getBlobNameList());
+        Set<String> TrackedFilesSet = new HashSet<>(curCommit.getFileNameList());
         File[] cwdFiles = CWD.listFiles();
 
         if (cwdFiles != null) {
             for (File file : cwdFiles) {
                 if (file.isFile()) {
                     // check file isn't a directory or other special file
-                    Blob blob = new Blob(file);
-                    if (!historyTrackedBlobsSet.contains(blob)
-                            && !addStageBlobset.contains(blob)
-                    || removeStageBlobSet.contains(blob)) {
-                        untrackedFiles.add(file.getName());
+                    String fileName = file.getName();
+                    if (!TrackedFilesSet.contains(fileName)
+                            && !addStageNameset.contains(fileName)
+                            || removeStageNameSet.contains(fileName)) {
+                        untrackedFiles.add(fileName);
                     }
                 }
             }

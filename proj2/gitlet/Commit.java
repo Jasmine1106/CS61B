@@ -108,10 +108,20 @@ public class Commit implements Serializable {
         List<Blob> blobList = new LinkedList<>();
         for (String path : pathToBlobID.keySet()) {
             String blobID = pathToBlobID.get(path);
-            Blob blob = Stage.getBlobByID(blobID);
+            Blob blob = getBlobByID(blobID);
             blobList.add(blob);
         }
         return blobList;
+    }
+
+    public List<String> getFileNameList() {
+        List<String> fileName = new LinkedList<>();
+        for (String path : pathToBlobID.keySet()) {
+            String blobID = pathToBlobID.get(path);
+            Blob blob = getBlobByID(blobID);
+            fileName.add(blob.getFileName());
+        }
+        return fileName;
     }
 
     // current timestamp
