@@ -679,6 +679,7 @@ public class Repository {
         Map<String, String> allFileMap = mergeAllMap(curBranchFileMap, givenBranchFileMap, spiltPointFileMap);
         // first two cases : these two branches actually in same line
         if (splitPointCommit.equals(givenBranchHeadCommit)) {
+            // SAD! painful debug ,forgot to override eaquls of commit object
             exit("Given branch is an ancestor of the current branch.");
         } else if (splitPointCommit.equals(curBranchHeadCommit)) {
             checkoutBranch(givenBranchName);
@@ -686,61 +687,61 @@ public class Repository {
         } else {
             // iterate allFileMap
             for (Map.Entry<String, String> entry : allFileMap.entrySet()) {
-                String spiltBlobID = entry.getKey();
-                String spiltFileName = entry.getValue();
-                byte[] curBranchFileContents = getBlobContentsByFileName(curBranchHeadCommit, spiltFileName);
-                byte[] givenBranchFileContents = getBlobContentsByFileName(givenBranchHeadCommit, spiltFileName);
+                String blobID = entry.getKey();
+                String fileName = entry.getValue();
+                byte[] curBranchFileContents = getBlobContentsByFileName(curBranchHeadCommit, fileName);
+                byte[] givenBranchFileContents = getBlobContentsByFileName(givenBranchHeadCommit, fileName);
                 byte[] mergedFileContents = mergeConflictFile(curBranchFileContents, givenBranchFileContents);
 
-                if (spiltPointFileMap.containsKey(spiltBlobID)
-                && curBranchFileMap.containsKey(spiltBlobID)
-                && !givenBranchFileMap.containsKey(spiltBlobID)) {
-                    if (givenBranchFileMap.containsValue(spiltFileName)) {
+                if (spiltPointFileMap.containsKey(blobID)
+                && curBranchFileMap.containsKey(blobID)
+                && !givenBranchFileMap.containsKey(blobID)) {
+                    if (givenBranchFileMap.containsValue(fileName)) {
                         // if file in given branch was changed
-                        checkoutFromCommit(givenBranchHeadCommit.getCommitID(), spiltFileName);
+                        checkoutFromCommit(givenBranchHeadCommit.getCommitID(), fileName);
                     } else {
                         // if file in given branch was deleted
-                        rm(getBlobByID(spiltBlobID).getSourceFile().getName());
+                        rm(getBlobByID(blobID).getSourceFile().getName());
                     }
-                } else if (spiltPointFileMap.containsKey(spiltBlobID)
-                && !curBranchFileMap.containsKey(spiltBlobID)
-                && givenBranchFileMap.containsKey(spiltBlobID)) {
+                } else if (spiltPointFileMap.containsKey(blobID)
+                && !curBranchFileMap.containsKey(blobID)
+                && givenBranchFileMap.containsKey(blobID)) {
                     continue; // no matter the file is changed or deleted, just keep the same
-                } else if (spiltPointFileMap.containsKey(spiltBlobID)
-                && !curBranchFileMap.containsKey(spiltBlobID)
-                && !givenBranchFileMap.containsKey(spiltBlobID)) {
+                } else if (spiltPointFileMap.containsKey(blobID)
+                && !curBranchFileMap.containsKey(blobID)
+                && !givenBranchFileMap.containsKey(blobID)) {
                     // start deal with conflict case
-                    if (curBranchFileContents != givenBranchFileContents) {
-                        File curbranchFile = getBlobByFileName(curBranchHeadCommit, spiltFileName).getSourceFile();
+                    if (!Arrays.equals(curBranchFileContents,givenBranchFileContents)) {
+                        File curbranchFile = getBlobByFileName(curBranchHeadCommit, fileName).getSourceFile();
                         writeContents(curbranchFile, mergedFileContents);
-                        add(spiltFileName);
+                        add(fileName);
                         ifMergeConflict = true;
                     }
-                } else if (!spiltPointFileMap.containsKey(spiltBlobID)
-                        && curBranchFileMap.containsKey(spiltBlobID)
-                        && !givenBranchFileMap.containsKey(spiltBlobID)) {
-                    if (curBranchFileContents != givenBranchFileContents
+                } else if (!spiltPointFileMap.containsKey(blobID)
+                        && curBranchFileMap.containsKey(blobID)
+                        && !givenBranchFileMap.containsKey(blobID)) {
+                    if (!Arrays.equals(curBranchFileContents, givenBranchFileContents)
                             && curBranchFileContents != null
                             && givenBranchFileContents != null) {
-                        File curbranchFile = getBlobByFileName(curBranchHeadCommit, spiltFileName).getSourceFile();
+                        File curbranchFile = getBlobByFileName(curBranchHeadCommit, fileName).getSourceFile();
                         writeContents(curbranchFile, mergedFileContents);
-                        add(spiltFileName);
+                        add(fileName);
                         ifMergeConflict = true;
                     }
-                } else if (!spiltPointFileMap.containsKey(spiltBlobID)
-                        && !curBranchFileMap.containsKey(spiltBlobID)
-                        && givenBranchFileMap.containsKey(spiltBlobID)) {
-                    if (curBranchFileContents != givenBranchFileContents
+                } else if (!spiltPointFileMap.containsKey(blobID)
+                        && !curBranchFileMap.containsKey(blobID)
+                        && givenBranchFileMap.containsKey(blobID)) {
+                    if (!Arrays.equals(curBranchFileContents, givenBranchFileContents)
                             && curBranchFileContents != null
                             && givenBranchFileContents != null) {
-                        File curbranchFile = getBlobByFileName(curBranchHeadCommit, spiltFileName).getSourceFile();
+                        File curbranchFile = getBlobByFileName(curBranchHeadCommit, fileName).getSourceFile();
                         writeContents(curbranchFile, mergedFileContents);
-                        add(spiltFileName);
+                        add(fileName);
                         ifMergeConflict = true;
                     } else if (curBranchFileContents == null
                     && givenBranchFileContents != null) {
-                        checkoutFromCommit(givenBranchHeadCommit.getCommitID(), spiltFileName);
-                        add(spiltFileName);
+                        checkoutFromCommit(givenBranchHeadCommit.getCommitID(), fileName);
+                        add(fileName);
                     }
                 }
 
