@@ -412,12 +412,10 @@ public class Repository {
                 if (!Arrays.equals(cwdFileContents, blob.getFileContents())) {
                     modifiedNotStageFiles.add(blob.getFileName() + "(modified)");
                 }
-            }
-            // 4. Blob_dir, not in CWD, not staged for removal(deleted)
-            else if (!removeStageBlobSet.contains(blob)
+            } else if (!removeStageBlobSet.contains(blob)
                     && !fileInCWD.exists()) {
                 modifiedNotStageFiles.add(blob.getFileName() + "(deleted)");
-            }
+            } // 4. Blob_dir, not in CWD, not staged for removal(deleted)
         }
         // 2. staged for addition, in CWD, but unequal version(modified)
         // 3. staged for addition, but not in CWD(deleted)
@@ -428,7 +426,7 @@ public class Repository {
                 if (!Arrays.equals(cwdFileContents, blob.getFileContents())) {
                     modifiedNotStageFiles.add(blob.getFileName() + "(modified)");
                 }
-            } else if (!fileInCWD.exists()){
+            } else if (!fileInCWD.exists()) {
                 modifiedNotStageFiles.add(blob.getFileName() + "(deleted)");
             }
         }
@@ -447,7 +445,7 @@ public class Repository {
         Commit curCommit = getCurCommit();
         Set<String> addStageNameset = new HashSet<>(addStage.getBlobNameList());
         Set<String> removeStageNameSet = new HashSet<>(removeStage.getBlobNameList());
-        Set<String> TrackedFilesSet = new HashSet<>(curCommit.getFileNameList());
+        Set<String> trackedFilesSet = new HashSet<>(curCommit.getFileNameList());
         File[] cwdFiles = CWD.listFiles();
 
         if (cwdFiles != null) {
@@ -455,7 +453,7 @@ public class Repository {
                 if (file.isFile()) {
                     // check file isn't a directory or other special file
                     String fileName = file.getName();
-                    if (!TrackedFilesSet.contains(fileName)
+                    if (!trackedFilesSet.contains(fileName)
                             && !addStageNameset.contains(fileName)
                             || removeStageNameSet.contains(fileName)) {
                         untrackedFiles.add(fileName);
@@ -663,17 +661,7 @@ public class Repository {
      *  Merges files from the given branch into the current branch.
      */
     public static void merge(String givenBranchName) {
-        // failure cases:
-        if (!calUntracked().isEmpty()) {
-            exit("There is an untracked file in the way; delete it, or add and commit it first.");
-        } if (!stageIsEmpty()) {
-            exit("You have uncommitted changes.");
-        } if (readCurBranch().equals(givenBranchName)) {
-            exit("Cannot merge a branch with itself.");
-        } if (Branch.getBranchFileByName(givenBranchName) == null) {
-            exit("A branch with that name does not exist.");
-        }
-
+        checkMergeFailureCases(givenBranchName); // check
         boolean ifMergeConflict = false;
         Commit curBranchHeadCommit = getCurCommit();
         Commit givenBranchHeadCommit = getBranchHead(givenBranchName);
@@ -682,15 +670,13 @@ public class Repository {
         Map<String, String> givenBranchFileMap = getBlobIdToFileNameMap(givenBranchHeadCommit);
         Map<String, String> spiltPointFileMap = getBlobIdToFileNameMap(splitPointCommit);
         Map<String, String> allFileMap = mergeAllMap(curBranchFileMap, givenBranchFileMap, spiltPointFileMap);
-        // first two cases : these two branches actually in same line
         if (splitPointCommit.equals(givenBranchHeadCommit)) {
             // SAD! painful debug ,forgot to override eaquls of commit object
             exit("Given branch is an ancestor of the current branch.");
         } else if (splitPointCommit.equals(curBranchHeadCommit)) {
             checkoutBranch(givenBranchName);
             exit("Current branch fast-forwarded.");
-        } else {
-            // iterate allFileMap
+        } else { // iterate allFileMap
             for (Map.Entry<String, String> entry : allFileMap.entrySet()) {
                 String blobID = entry.getKey();
                 String fileName = entry.getValue();
@@ -698,22 +684,18 @@ public class Repository {
                 byte[] givenBranchFileContents = getBlobContentsByFileName(givenBranchHeadCommit, fileName);
                 byte[] spiltFileContents = getBlobContentsByFileName(splitPointCommit, fileName);
                 byte[] mergedFileContents = mergeConflictFile(curBranchFileContents, givenBranchFileContents);
-
                 if (spiltPointFileMap.containsKey(blobID)
                 && curBranchFileMap.containsKey(blobID)
                 && !givenBranchFileMap.containsKey(blobID)) {
-                    if (givenBranchFileMap.containsValue(fileName)) {
-                        // if file in given branch was changed
+                    if (givenBranchFileMap.containsValue(fileName)) { // if file was changed
                         checkoutFromCommit(givenBranchHeadCommit.getCommitID(), fileName);
-                    } else {
-                        // if file in given branch was deleted
+                    } else { // if file was deleted
                         rm(getBlobByID(blobID).getSourceFile().getName());
                     }
                 } else if (spiltPointFileMap.containsKey(blobID)
                 && !curBranchFileMap.containsKey(blobID)
                 && !givenBranchFileMap.containsKey(blobID)) {
                     // start deal with conflict case
-                    // this case is both branches contents are changed from spiltCommit
                     if (!Arrays.equals(curBranchFileContents,givenBranchFileContents)) {
                         File curbranchFile = getBlobByFileName(curBranchHeadCommit, fileName).getSourceFile();
                         writeContents(curbranchFile, mergedFileContents);
@@ -758,6 +740,19 @@ public class Repository {
             // auto update head pointer and branch pointer, as well clearing staging area in commit method
         }
 
+    }
+
+    // Check all failure cases and exit if any condition is met
+    private static void checkMergeFailureCases(String givenBranchName) {
+        if (!calUntracked().isEmpty()) {
+            exit("There is an untracked file in the way; delete it, or add and commit it first.");
+        } if (!stageIsEmpty()) {
+            exit("You have uncommitted changes.");
+        } if (readCurBranch().equals(givenBranchName)) {
+            exit("Cannot merge a branch with itself.");
+        } if (Branch.getBranchFileByName(givenBranchName) == null) {
+            exit("A branch with that name does not exist.");
+        }
     }
 
 

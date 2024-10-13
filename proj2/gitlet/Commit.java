@@ -31,7 +31,7 @@ public class Commit implements Serializable {
     /** a treemap for storing blobs, file paths is key, and blob_id is value */
     private final Map<String, String> pathToBlobID;
     /** a Linked list for sorting all parents' commitID*/
-    private final List<String> parents;
+    private List<String> parents;
     // File storing the commit object
     private final transient File commitFile;
 
@@ -157,11 +157,13 @@ public class Commit implements Serializable {
      */
 
     public void print() {
-        List<String>parents = getParents();
+        parents = getParents();
         System.out.println("===");
         System.out.println("commit " + commitID);
         if (parents.size() == 2) {
-            System.out.println("Merge: " + parents.get(0).substring(0, 7) + " " + parents.get(1).substring(0, 7));
+            System.out.println("Merge: "
+                    + parents.get(0).substring(0, 7)
+                    + " " + parents.get(1).substring(0, 7));
         }
         System.out.println("Date: " + timestamp);
         System.out.println(message);
@@ -191,7 +193,7 @@ public class Commit implements Serializable {
     }
 
     public List<String> getHistoryCommit() {
-        List<String> parents = this.getParents();
+        parents = this.getParents();
         List<String> reverseHistory = new LinkedList<>();
         reverseHistory.add(this.getCommitID());
         while (!parents.isEmpty()) {
@@ -208,10 +210,9 @@ public class Commit implements Serializable {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof Commit)) {
+        if (!(obj instanceof Commit other)) {
             return false;
         }
-       Commit other = (Commit) obj;
         return this.commitID.equals(other.commitID);
     }
 
