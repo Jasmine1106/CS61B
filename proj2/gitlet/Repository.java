@@ -166,7 +166,7 @@ public class Repository {
     }
 
     private static List<String> updateParents(String parentCommitID, String mergeCommitID) {
-        List<String> parents = new ArrayList<>();
+        List<String> parents = new LinkedList<>();
         parents.add(parentCommitID);
         if (mergeCommitID != null) {
             parents.add(mergeCommitID);
