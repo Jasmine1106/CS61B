@@ -441,9 +441,11 @@ public class Repository {
      *  but then re-created without Gitlet’s knowledge.
      *  */
     public static List<String> calUntracked() {
-        List<String> untrackedFiles = new ArrayList<>();
+        List<String> untrackedFiles = new LinkedList<>();
         addStage = readAddStage();
-        Set<Blob> addStageBlobSset = new HashSet<>(addStage.getBlobList());
+        removeStage = readRemoveStage();
+        Set<Blob> addStageBlobset = new HashSet<>(addStage.getBlobList());
+        Set<Blob> removeStageBlobSet = new HashSet<>(removeStage.getBlobList());
         Set<Blob> historyTrackedBlobsSet = new HashSet<>(getTrackedBlobList());
         File[] cwdFiles = CWD.listFiles();
 
@@ -453,7 +455,8 @@ public class Repository {
                     // check file isn't a directory or other special file
                     Blob blob = new Blob(file);
                     if (!historyTrackedBlobsSet.contains(blob)
-                            && !addStageBlobSset.contains(blob)) {
+                            && !addStageBlobset.contains(blob)
+                    || removeStageBlobSet.contains(blob)) {
                         untrackedFiles.add(file.getName());
                     }
                 }
