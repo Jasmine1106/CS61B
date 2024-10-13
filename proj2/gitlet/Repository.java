@@ -661,6 +661,7 @@ public class Repository {
             exit("A branch with that name does not exist.");
         }
 
+        boolean ifMergeConflict = false;
         Commit curBranchHeadCommit = getCurCommit();
         Commit givenBranchHeadCommit = getBranchHead(givenBranchName);
         Commit splitPointCommit = getSpiltPointCommit(getCurBranchName(), givenBranchName);
@@ -705,7 +706,7 @@ public class Repository {
                         File curbranchFile = getBlobByFileName(curBranchHeadCommit, spiltFileName).getSourceFile();
                         writeContents(curbranchFile, mergedFileContents);
                         add(spiltFileName);
-                        System.out.println("Encountered a merge conflict.");
+                        ifMergeConflict = true;
                     }
                 } else if (!spiltPointFileMap.containsKey(spiltBlobID)
                         && curBranchFileMap.containsKey(spiltBlobID)
@@ -716,7 +717,7 @@ public class Repository {
                         File curbranchFile = getBlobByFileName(curBranchHeadCommit, spiltFileName).getSourceFile();
                         writeContents(curbranchFile, mergedFileContents);
                         add(spiltFileName);
-                        System.out.println("Encountered a merge conflict.");
+                        ifMergeConflict = true;
                     }
                 } else if (!spiltPointFileMap.containsKey(spiltBlobID)
                         && !curBranchFileMap.containsKey(spiltBlobID)
@@ -727,7 +728,7 @@ public class Repository {
                         File curbranchFile = getBlobByFileName(curBranchHeadCommit, spiltFileName).getSourceFile();
                         writeContents(curbranchFile, mergedFileContents);
                         add(spiltFileName);
-                        System.out.println("Encountered a merge conflict.");
+                        ifMergeConflict = true;
                     } else if (curBranchFileContents == null
                     && givenBranchFileContents != null) {
                         checkoutFromCommit(givenBranchHeadCommit.getCommitID(), spiltFileName);
@@ -737,6 +738,9 @@ public class Repository {
 
 
 
+            }
+            if (ifMergeConflict) {
+                System.out.println("Encountered a merge conflict.");
             }
             commit("Merged [given branch name] into [current branch name].");
         }
