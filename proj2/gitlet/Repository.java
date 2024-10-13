@@ -820,8 +820,8 @@ public class Repository {
         }
         String curBranchCommitID = curBranchCommit.getCommitID();
         String givenBranchCommitID = givenBranchCommit.getCommitID();
-        List<String> curBranchAncestorsID = curBranchCommit.getParents();
-        List<String> givenBranchAncestorsID = givenBranchCommit.getParents();
+        List<String> curBranchAncestorsID = curBranchCommit.getHistoryCommit();
+        List<String> givenBranchAncestorsID = givenBranchCommit.getHistoryCommit();
         // these two branches in same line
         if (curBranchAncestorsID.contains(givenBranchCommitID)) {
             return givenBranchCommit;
@@ -840,6 +840,7 @@ public class Repository {
             return null;
         }
     }
+
 
 
 

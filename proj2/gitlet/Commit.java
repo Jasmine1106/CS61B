@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.*;
 
 
@@ -177,6 +178,18 @@ public class Commit implements Serializable {
             return commitFullID;
         }
         return null;
+    }
+
+    public List<String> getHistoryCommit() {
+        List<String> parents = this.getParents();
+        List<String> reverseHistory = new LinkedList<>();
+        reverseHistory.add(this.getCommitID());
+        while (parents != null) {
+            String parentID = parents.get(0);
+            reverseHistory.add(parentID);
+            parents = getCommitByID(parentID).getParents();
+        }
+        return reverseHistory.reversed();
     }
 
 }
