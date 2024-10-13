@@ -184,7 +184,7 @@ public class Commit implements Serializable {
         List<String> parents = this.getParents();
         List<String> reverseHistory = new LinkedList<>();
         reverseHistory.add(this.getCommitID());
-        while (parents != null) {
+        while (!parents.isEmpty()) {
             String parentID = parents.get(0);
             reverseHistory.add(parentID);
             parents = getCommitByID(parentID).getParents();
