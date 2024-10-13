@@ -866,7 +866,7 @@ public class Repository {
                         givenQueue.offer(dad);
                         givenVisited.add(dad);
                     }
-                    if (givenParents.size() > 1 && !givenParents.contains(givenParents.get(1))) {
+                    if (givenParents.size() > 1 && !givenVisited.contains(givenParents.get(1))) {
                         givenQueue.offer(givenParents.get(1));
                         givenVisited.add(givenParents.get(1));
                     }
