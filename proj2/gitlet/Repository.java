@@ -145,21 +145,52 @@ public class Repository {
      *  may be untracked in the new commit as a result being staged for removal by  rm.
      */
     public static void commit(String message) {
+        commit(message, null);
+    }
+
+    public static void commit(String message, String mergeCommitID) {
         if (stageIsEmpty()) {
             exit("No changes added to the commit.");
         }
         if (message == null) {
             exit("Please enter a commit message.");
         }
-        Commit parentCommit = getCurCommit();
+        String parentCommit = getCurCommit().getCommitID();
         // update parents
-        List<String> parents = updateParents(parentCommit);
+        List<String> parents = updateParents(parentCommit, mergeCommitID);
         // update pathToBlobID
         Map<String, String> pathToBlobID = updatePathToBlobID(parentCommit);
         // create new commit and save it
         Commit newCommit = new Commit(message, parents, pathToBlobID);
         saveNewCommit(newCommit);
     }
+
+    private static List<String> updateParents(String parentCommitID, String mergeCommitID) {
+        List<String> parents = new ArrayList<>();
+        parents.add(parentCommitID);
+        if (mergeCommitID != null) {
+            parents.add(mergeCommitID);
+        }
+        return parents;
+    }
+
+    private static Map<String, String> updatePathToBlobID(String parentCommitID) {
+        Map<String, String> pathToBlobID = getCommitByID(parentCommitID).getPathToBlobID();
+        Map<String, String> addStageMaptageMap = calAddStageMap();
+        Map<String, String> removeStageMap = calRemoveStageMap();
+        if (addStageMaptageMap.size() != 0) {
+            for (String blobID : addStageMaptageMap.keySet()) {
+                pathToBlobID.put(addStageMaptageMap.get(blobID), blobID);
+            }
+        }
+        if (removeStageMap.size() != 0) {
+            for (String blobID : removeStageMap.keySet()) {
+                pathToBlobID.remove(removeStageMap.get(blobID));
+            }
+        }
+        return pathToBlobID;
+    }
+
 
     private static  boolean stageIsEmpty() {
         addStage = readAddStage();
@@ -200,28 +231,6 @@ public class Repository {
         return readObject(REMOVAL, Stage.class);
     }
 
-    private static List<String> updateParents(Commit parentCommit) {
-        List<String> parents = parentCommit.getParents();
-        parents.add(parentCommit.getCommitID());
-        return parents;
-    }
-
-    private static Map<String, String> updatePathToBlobID(Commit parentCommit) {
-        Map<String, String> pathToBlobID = parentCommit.getPathToBlobID();
-        Map<String, String> addStageMaptageMap = calAddStageMap();
-        Map<String, String> removeStageMap = calRemoveStageMap();
-        if (addStageMaptageMap.size() != 0) {
-            for (String blobID : addStageMaptageMap.keySet()) {
-                pathToBlobID.put(addStageMaptageMap.get(blobID), blobID);
-            }
-        }
-        if (removeStageMap.size() != 0) {
-            for (String blobID : removeStageMap.keySet()) {
-                pathToBlobID.remove(removeStageMap.get(blobID));
-            }
-        }
-        return pathToBlobID;
-    }
 
     private static Map<String, String> calAddStageMap() {
         addStage = readAddStage();
@@ -299,7 +308,6 @@ public class Repository {
             parentCommit.print();
             history = parentCommit.getParents();
         }
-        // TODO: branch case:
 
     }
 
@@ -742,7 +750,7 @@ public class Repository {
             if (ifMergeConflict) {
                 System.out.println("Encountered a merge conflict.");
             }
-            commit("Merged [given branch name] into [current branch name].");
+            commit("Merged " + givenBranchName + " into " + getCurBranchName(), givenBranchHeadCommit.getCommitID());
         }
 
 
@@ -751,24 +759,7 @@ public class Repository {
 
     }
 
-    /** TODO change merge commit with both parents current branch and given branch
-    public static void commit(String message) {
-        if (haveUncommitedChangeds()) {
-            exit("No changes added to the commit.");
-        }
-        if (message == null) {
-            exit("Please enter a commit message.");
-        }
-        Commit parentCommit = getCurCommit();
-        // update parents
-        List<String> parents = updateParents(parentCommit);
-        // update pathToBlobID
-        Map<String, String> pathToBlobID = updatePathToBlobID(parentCommit);
-        // create new commit and save it
-        Commit newCommit = new Commit(message, parents, pathToBlobID);
-        saveNewCommit(newCommit);
-    }
-     */
+
 
     private static byte[] mergeConflictFile(byte[] curBranchFile, byte[] givenBranchFile) {
         String curBranchFileContents = curBranchFile != null ? new String(curBranchFile) : "";
