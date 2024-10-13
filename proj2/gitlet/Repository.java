@@ -341,7 +341,7 @@ public class Repository {
             }
         }
         if (!ifFound) {
-            exit("Found no commit with that message.");
+            System.out.println("Found no commit with that message.");
         }
     }
 
