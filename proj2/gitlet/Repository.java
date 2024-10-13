@@ -145,7 +145,7 @@ public class Repository {
      *  may be untracked in the new commit as a result being staged for removal by  rm.
      */
     public static void commit(String message) {
-        if (haveUncommitedChangeds()) {
+        if (stageIsEmpty()) {
             exit("No changes added to the commit.");
         }
         if (message == null) {
@@ -161,7 +161,7 @@ public class Repository {
         saveNewCommit(newCommit);
     }
 
-    private static  boolean haveUncommitedChangeds() {
+    private static  boolean stageIsEmpty() {
         addStage = readAddStage();
         removeStage = readRemoveStage();
         return addStage.isEmpty() && removeStage.isEmpty();
@@ -653,7 +653,7 @@ public class Repository {
         // failure cases:
         if (!calUntracked().isEmpty()) {
             exit("There is an untracked file in the way; delete it, or add and commit it first.");
-        } if (haveUncommitedChangeds()) {
+        } if (!stageIsEmpty()) {
             exit("You have uncommitted changes.");
         } if (readCurBranch().equals(givenBranchName)) {
             exit("Cannot merge a branch with itself.");
