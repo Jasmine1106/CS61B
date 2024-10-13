@@ -672,7 +672,7 @@ public class Repository {
         boolean ifMergeConflict = false;
         Commit curBranchHeadCommit = getCurCommit();
         Commit givenBranchHeadCommit = getBranchHead(givenBranchName);
-        Commit splitPointCommit = getSpiltPointCommit(getCurBranchName(), givenBranchName);
+        Commit splitPointCommit = getCommitByID(getSpiltPointCommitID(getCurBranchName(), givenBranchName));
         Map<String, String> curBranchFileMap = getBlobIdToFileNameMap(curBranchHeadCommit);
         Map<String, String> givenBranchFileMap = getBlobIdToFileNameMap(givenBranchHeadCommit);
         Map<String, String> spiltPointFileMap = getBlobIdToFileNameMap(splitPointCommit);
@@ -811,34 +811,70 @@ public class Repository {
     }
 
 
-    // for two branches,get the nearest split point
-    private static Commit getSpiltPointCommit(String curBranchName, String givenBranchName) {
+    // using BFS to get the nearest split point between two branches
+    private static String getSpiltPointCommitID(String curBranchName, String givenBranchName) {
         Commit curBranchCommit = getBranchHead(curBranchName);
         Commit givenBranchCommit = getBranchHead(givenBranchName);
+        String curBranchCommitID = curBranchCommit.getCommitID();
+        String givenBranchCommitID = givenBranchCommit.getCommitID();
         if (curBranchCommit.equals(givenBranchCommit)) {
             exit("this tow branch points the same commit");
         }
-        String curBranchCommitID = curBranchCommit.getCommitID();
-        String givenBranchCommitID = givenBranchCommit.getCommitID();
-        List<String> curBranchAncestorsID = curBranchCommit.getHistoryCommit();
-        List<String> givenBranchAncestorsID = givenBranchCommit.getHistoryCommit();
-        // these two branches in same line
-        if (curBranchAncestorsID.contains(givenBranchCommitID)) {
-            return givenBranchCommit;
-        } else if (givenBranchAncestorsID.contains(curBranchCommitID)) {
-            return curBranchCommit;
-        } else {
-            LinkedList<String>AncestorsLinkedList = (LinkedList<String>) givenBranchAncestorsID;
-            // go throuth the whole givenBranchAncestorsID list,
-            while (!AncestorsLinkedList.isEmpty()) {
-                givenBranchCommitID = AncestorsLinkedList.getLast();
-                if (curBranchAncestorsID.contains(givenBranchCommitID)) {
-                    return getCommitByID(givenBranchCommitID);
+        Queue<String> curQueue = new LinkedList<>();
+        Queue<String> givenQueue = new LinkedList<>();
+        Set<String> curVisited = new HashSet<>();
+        Set<String> givenVisited = new HashSet<>();
+        // add head commits of both branches into queues and sets
+        curQueue.offer(curBranchCommitID);
+        curVisited.add(curBranchCommitID);
+        givenQueue.offer(givenBranchCommitID);
+        givenVisited.add(givenBranchCommitID);
+
+        // BFS implement by Queue
+        while (!curQueue.isEmpty() || !givenQueue.isEmpty()) {
+            // travesal curren branch
+            if (!curQueue.isEmpty()) {
+                String curID = curQueue.poll();
+                if (givenVisited.contains(curID)) {
+                    return  curID;
                 }
-                AncestorsLinkedList.removeLast();
+                // find parents
+                Commit curCommit = getCommitByID(curID);
+                List<String> curParents = curCommit.getParents();
+                if (!curParents.isEmpty()) {
+                    String father = curParents.get(0);
+                    if (!curVisited.contains(father)) {
+                        curQueue.offer(father);
+                        curVisited.add(father);
+                    }
+                    if (curParents.size() > 1 && !curVisited.contains(curParents.get(1))) {
+                        curQueue.offer(curParents.get(1));
+                        curVisited.add(curParents.get(1));
+                    }
+                }
             }
-            return null;
+            // travesal given branch
+            if (!givenQueue.isEmpty()) {
+                String givenID = givenQueue.poll();
+                if (curVisited.contains(givenID)) {
+                    return givenID;
+                }
+                Commit givenCommit = getCommitByID(givenID);
+                List<String> givenParents = givenCommit.getParents();
+                if (!givenParents.isEmpty()) {
+                    String dad = givenParents.get(0);
+                    if (!givenVisited.contains(dad)) {
+                        givenQueue.offer(dad);
+                        givenVisited.add(dad);
+                    }
+                    if (givenParents.size() > 1 && !givenParents.contains(givenParents.get(1))) {
+                        givenQueue.offer(givenParents.get(1));
+                        givenVisited.add(givenParents.get(1));
+                    }
+                }
+            }
         }
+        return null;
     }
 
 
