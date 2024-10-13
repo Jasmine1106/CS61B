@@ -814,7 +814,7 @@ public class Repository {
     }
 
 
-    // for two branches,
+    // for two branches,get the nearest split point
     private static Commit getSpiltPointCommit(String curBranchName, String givenBranchName) {
         Commit curBranchCommit = getBranchHead(curBranchName);
         Commit givenBranchCommit = getBranchHead(givenBranchName);

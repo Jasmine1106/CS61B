@@ -48,7 +48,7 @@ public class Commit implements Serializable {
     // initial commit
     public Commit() {
         this.message = "initial commit";
-        this.parents = new ArrayList<>();
+        this.parents = new LinkedList<>();
         this.pathToBlobID = new TreeMap<>();
         this.timestamp = makeInitialTimestamp();
         this.commitID = generateID();
