@@ -150,7 +150,7 @@ public class Commit implements Serializable {
         System.out.println("===");
         System.out.println("commit " + commitID);
         if (parents.size() == 2) {
-            System.out.println("Merge:" + parents.get(0).substring(0, 7) + " " + parents.get(1).substring(0, 7));
+            System.out.println("Merge: " + parents.get(0).substring(0, 7) + " " + parents.get(1).substring(0, 7));
         }
         System.out.println("Date: " + timestamp);
         System.out.println(message);

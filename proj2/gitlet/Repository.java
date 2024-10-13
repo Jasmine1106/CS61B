@@ -750,7 +750,7 @@ public class Repository {
             if (ifMergeConflict) {
                 System.out.println("Encountered a merge conflict.");
             }
-            commit("Merged " + givenBranchName + " into " + getCurBranchName(), givenBranchHeadCommit.getCommitID());
+            commit("Merged " + givenBranchName + " into " + getCurBranchName() + ".", givenBranchHeadCommit.getCommitID());
         }
 
 
