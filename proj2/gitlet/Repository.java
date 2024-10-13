@@ -660,35 +660,35 @@ public class Repository {
     /** merge [branch name]
      *  Merges files from the given branch into the current branch.
      */
-    public static void merge(String givenBranchName) {
-        checkMergeFailureCases(givenBranchName); // check
+    public static void merge(String givenBranch) {
+        checkMergeFailureCases(givenBranch); // check
         boolean ifMergeConflict = false;
-        Commit curBranchHeadCommit = getCurCommit();
-        Commit givenBranchHeadCommit = getBranchHead(givenBranchName);
-        Commit splitPointCommit = getCommitByID(getSpiltPointCommitID(getCurBranchName(), givenBranchName));
-        Map<String, String> curBranchFileMap = getBlobIdToFileNameMap(curBranchHeadCommit);
-        Map<String, String> givenBranchFileMap = getBlobIdToFileNameMap(givenBranchHeadCommit);
-        Map<String, String> spiltPointFileMap = getBlobIdToFileNameMap(splitPointCommit);
-        Map<String, String> allFileMap = mergeAllMap(curBranchFileMap, givenBranchFileMap, spiltPointFileMap);
-        if (splitPointCommit.equals(givenBranchHeadCommit)) {
+        Commit curHead = getCurCommit();
+        Commit givenHead = getBranchHead(givenBranch);
+        Commit splitCommit = getCommitByID(getSpiltCommitID(getCurBranchName(), givenBranch));
+        Map<String, String> curBranchFileMap = getBlobIdToNameMap(curHead);
+        Map<String, String> givenBranchFileMap = getBlobIdToNameMap(givenHead);
+        Map<String, String> spiltPointFileMap = getBlobIdToNameMap(splitCommit);
+        Map<String, String> mergedMap = mergeAllMap(curBranchFileMap, givenBranchFileMap, spiltPointFileMap);
+        if (splitCommit.equals(givenHead)) {
             // SAD! painful debug ,forgot to override eaquls of commit object
             exit("Given branch is an ancestor of the current branch.");
-        } else if (splitPointCommit.equals(curBranchHeadCommit)) {
-            checkoutBranch(givenBranchName);
+        } else if (splitCommit.equals(curHead)) {
+            checkoutBranch(givenBranch);
             exit("Current branch fast-forwarded.");
         } else { // iterate allFileMap
-            for (Map.Entry<String, String> entry : allFileMap.entrySet()) {
+            for (Map.Entry<String, String> entry : mergedMap.entrySet()) {
                 String blobID = entry.getKey();
                 String fileName = entry.getValue();
-                byte[] curBranchFileContents = getBlobContentsByFileName(curBranchHeadCommit, fileName);
-                byte[] givenBranchFileContents = getBlobContentsByFileName(givenBranchHeadCommit, fileName);
-                byte[] spiltFileContents = getBlobContentsByFileName(splitPointCommit, fileName);
-                byte[] mergedFileContents = mergeConflictFile(curBranchFileContents, givenBranchFileContents);
+                byte[] curFileContent = getContentsByName(curHead, fileName);
+                byte[] givenFileContent = getContentsByName(givenHead, fileName);
+                byte[] spiltFileContent = getContentsByName(splitCommit, fileName);
+                byte[] mergedFileContent = mergeFile(curFileContent, givenFileContent);
                 if (spiltPointFileMap.containsKey(blobID)
                 && curBranchFileMap.containsKey(blobID)
                 && !givenBranchFileMap.containsKey(blobID)) {
                     if (givenBranchFileMap.containsValue(fileName)) { // if file was changed
-                        checkoutFromCommit(givenBranchHeadCommit.getCommitID(), fileName);
+                        checkoutFromCommit(givenHead.getCommitID(), fileName);
                     } else { // if file was deleted
                         rm(getBlobByID(blobID).getSourceFile().getName());
                     }
@@ -696,81 +696,83 @@ public class Repository {
                 && !curBranchFileMap.containsKey(blobID)
                 && !givenBranchFileMap.containsKey(blobID)) {
                     // start deal with conflict case
-                    if (!Arrays.equals(curBranchFileContents,givenBranchFileContents)) {
-                        File curbranchFile = getBlobByFileName(curBranchHeadCommit, fileName).getSourceFile();
-                        writeContents(curbranchFile, mergedFileContents);
+                    if (!Arrays.equals(curFileContent, givenFileContent)) {
+                        File curbranchFile = getBlobByFileName(curHead, fileName).getSourceFile();
+                        writeContents(curbranchFile, mergedFileContent);
                         add(fileName);
                         ifMergeConflict = true;
                     }
                 } else if (!spiltPointFileMap.containsKey(blobID)
                         && curBranchFileMap.containsKey(blobID)
                         && !givenBranchFileMap.containsKey(blobID)) {
-                    if (curBranchFileContents != null
-                            && givenBranchFileContents != null
-                            && spiltFileContents == null
-                            && !Arrays.equals(curBranchFileContents, givenBranchFileContents)) {
-                        File curbranchFile = getBlobByFileName(curBranchHeadCommit, fileName).getSourceFile();
-                        writeContents(curbranchFile, mergedFileContents);
+                    if (curFileContent != null
+                            && givenFileContent != null
+                            && spiltFileContent == null
+                            && !Arrays.equals(curFileContent, givenFileContent)) {
+                        File curbranchFile = getBlobByFileName(curHead, fileName).getSourceFile();
+                        writeContents(curbranchFile, mergedFileContent);
                         add(fileName);
                         ifMergeConflict = true;
                     }
                 } else if (!spiltPointFileMap.containsKey(blobID)
                         && !curBranchFileMap.containsKey(blobID)
-                        && spiltFileContents == null
+                        && spiltFileContent == null
                         && givenBranchFileMap.containsKey(blobID)) {
-                    if (curBranchFileContents != null
-                            && givenBranchFileContents != null
-                            && !Arrays.equals(curBranchFileContents, givenBranchFileContents)) {
-                        File curbranchFile = getBlobByFileName(curBranchHeadCommit, fileName).getSourceFile();
-                        writeContents(curbranchFile, mergedFileContents);
+                    if (curFileContent != null
+                            && givenFileContent != null
+                            && !Arrays.equals(curFileContent, givenFileContent)) {
+                        File curbranchFile = getBlobByFileName(curHead, fileName).getSourceFile();
+                        writeContents(curbranchFile, mergedFileContent);
                         add(fileName);
                         ifMergeConflict = true;
-                    } else if (curBranchFileContents == null
-                    && givenBranchFileContents != null) {
-                        checkoutFromCommit(givenBranchHeadCommit.getCommitID(), fileName);
+                    } else if (curFileContent == null
+                    && givenFileContent != null) {
+                        checkoutFromCommit(givenHead.getCommitID(), fileName);
                         add(fileName);
                     }
                 }
-
             }
             if (ifMergeConflict) {
                 System.out.println("Encountered a merge conflict.");
             }
-            commit("Merged " + givenBranchName + " into " + getCurBranchName() + ".", givenBranchHeadCommit.getCommitID());
-            // auto update head pointer and branch pointer, as well clearing staging area in commit method
+            commit("Merged "
+                    + givenBranch + " into "
+                    + getCurBranchName() + ".", givenHead.getCommitID());
         }
-
     }
 
     // Check all failure cases and exit if any condition is met
     private static void checkMergeFailureCases(String givenBranchName) {
         if (!calUntracked().isEmpty()) {
             exit("There is an untracked file in the way; delete it, or add and commit it first.");
-        } if (!stageIsEmpty()) {
+        }
+        if (!stageIsEmpty()) {
             exit("You have uncommitted changes.");
-        } if (readCurBranch().equals(givenBranchName)) {
+        }
+        if (readCurBranch().equals(givenBranchName)) {
             exit("Cannot merge a branch with itself.");
-        } if (Branch.getBranchFileByName(givenBranchName) == null) {
+        }
+        if (Branch.getBranchFileByName(givenBranchName) == null) {
             exit("A branch with that name does not exist.");
         }
     }
 
 
 
-    private static byte[] mergeConflictFile(byte[] curBranchFile, byte[] givenBranchFile) {
-        String curBranchFileContents = curBranchFile != null ? new String(curBranchFile) : "";
-        String givenBranchFileContents = givenBranchFile != null ? new String(givenBranchFile) : "";
+    private static byte[] mergeFile(byte[] curBranchFile, byte[] givenBranchFile) {
+        String curFileContent = curBranchFile != null ? new String(curBranchFile) : "";
+        String givenFileContent = givenBranchFile != null ? new String(givenBranchFile) : "";
         String mergedStrings = "<<<<<<< HEAD\n"
-                              + curBranchFileContents
+                              + curFileContent
                               + "=======\n"
-                              + givenBranchFileContents
+                              + givenFileContent
                               + ">>>>>>>\n";
         byte[] mergedContents = mergedStrings.getBytes(StandardCharsets.UTF_8);
         return mergedContents;
     }
 
 
-    private static Map<String, String> getBlobIdToFileNameMap(Commit commit) {
+    private static Map<String, String> getBlobIdToNameMap(Commit commit) {
         Map<String, String> blobIdToFileNameMap = new HashMap<>();
         List<Blob> blobList = commit.getBlobList();
         for (Blob blob : blobList) {
@@ -791,7 +793,7 @@ public class Repository {
     }
 
     private static Blob getBlobByFileName(Commit commit, String fileName) {
-        Map<String, String> blobIdToFileNameMap = getBlobIdToFileNameMap(commit);
+        Map<String, String> blobIdToFileNameMap = getBlobIdToNameMap(commit);
         for (Map.Entry<String, String> entry : blobIdToFileNameMap.entrySet()) {
             String commitBlobID = entry.getKey();
             String commitFileName = entry.getValue();
@@ -802,7 +804,7 @@ public class Repository {
         return null;
     }
 
-    private static byte[] getBlobContentsByFileName(Commit commit, String fileName) {
+    private static byte[] getContentsByName(Commit commit, String fileName) {
         Blob blob = getBlobByFileName(commit, fileName);
         if (blob != null) {
             return blob.getFileContents();
@@ -812,7 +814,7 @@ public class Repository {
 
 
     // using BFS to get the nearest split point between two branches
-    private static String getSpiltPointCommitID(String curBranchName, String givenBranchName) {
+    private static String getSpiltCommitID(String curBranchName, String givenBranchName) {
         Commit curBranchCommit = getBranchHead(curBranchName);
         Commit givenBranchCommit = getBranchHead(givenBranchName);
         String curBranchCommitID = curBranchCommit.getCommitID();
