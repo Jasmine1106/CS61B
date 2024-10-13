@@ -767,10 +767,12 @@ public class Repository {
      */
 
     private static byte[] mergeConflictFile(byte[] curBranchFile, byte[] givenBranchFile) {
+        String curBranchFileContents = curBranchFile != null ? new String(curBranchFile) : "";
+        String givenBranchFileContents = givenBranchFile != null ? new String(givenBranchFile) : "";
         String mergedStrings = "<<<<<<< HEAD\n"
-                              + new String(curBranchFile)
+                              + curBranchFileContents
                               + "=======\n"
-                              + new String(givenBranchFile)
+                              + givenBranchFileContents
                               + ">>>>>>>\n";
         byte[] mergedContents = mergedStrings.getBytes(StandardCharsets.UTF_8);
         return mergedContents;
