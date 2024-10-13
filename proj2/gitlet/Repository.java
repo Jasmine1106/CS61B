@@ -700,7 +700,8 @@ public class Repository {
                         checkoutFromCommit(givenBranchHeadCommit.getCommitID(), spiltFileName);
                     } else {
                         // if file in given branch was deleted
-                        getBlobByID(spiltBlobID).getSourceFile().delete();  //
+                        rm(getBlobByID(spiltBlobID).getSourceFile().getName());
+                        // TODO: Untrack this file
                     }
                 } else if (spiltPointFileMap.containsKey(spiltBlobID)
                 && !curBranchFileMap.containsKey(spiltBlobID)
@@ -744,18 +745,13 @@ public class Repository {
                     }
                 }
 
-
-
             }
             if (ifMergeConflict) {
                 System.out.println("Encountered a merge conflict.");
             }
             commit("Merged " + givenBranchName + " into " + getCurBranchName() + ".", givenBranchHeadCommit.getCommitID());
+            // auto update head pointer and branch pointer, as well clearing staging area in commit method
         }
-
-
-
-
 
     }
 
