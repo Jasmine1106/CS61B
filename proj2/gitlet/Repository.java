@@ -831,13 +831,14 @@ public class Repository {
         } else if (givenBranchAncestorsID.contains(curBranchCommitID)) {
             return curBranchCommit;
         } else {
+            LinkedList<String>AncestorsLinkedList = (LinkedList<String>) givenBranchAncestorsID;
             // go throuth the whole givenBranchAncestorsID list,
-            while (!givenBranchAncestorsID.isEmpty()) {
-                givenBranchCommitID = givenBranchAncestorsID.getLast();
+            while (!AncestorsLinkedList.isEmpty()) {
+                givenBranchCommitID = AncestorsLinkedList.getLast();
                 if (curBranchAncestorsID.contains(givenBranchCommitID)) {
                     return getCommitByID(givenBranchCommitID);
                 }
-                givenBranchAncestorsID.removeLast();
+                AncestorsLinkedList.removeLast();
             }
             return null;
         }
