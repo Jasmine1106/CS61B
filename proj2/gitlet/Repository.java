@@ -331,9 +331,9 @@ public class Repository {
      * */
 
     public static void find(String commitMessage) {
-        List<String> commitList = plainFilenamesIn(COMMIT_DIR);
+        Set<String> commitSet = new HashSet<>(plainFilenamesIn(COMMIT_DIR));
         boolean ifFound = false;
-        for (String commitID: commitList) {
+        for (String commitID: commitSet) {
             Commit commitObject = getCommitByID(commitID);
             if (commitMessage.equals(commitObject.getMessage())) {
                 System.out.println(commitObject.getCommitID());
@@ -414,20 +414,21 @@ public class Repository {
                 }
             }
             // 4. Blob_dir, not in CWD, not staged for removal(deleted)
-            if (!removeStageBlobSet.contains(blob) && !fileInCWD.exists()) {
+            else if (!removeStageBlobSet.contains(blob)
+                    && !fileInCWD.exists()) {
                 modifiedNotStageFiles.add(blob.getFileName() + "(deleted)");
             }
         }
-        // 2. staged for addition, in CWD, but uneaqul version(modified)
+        // 2. staged for addition, in CWD, but unequal version(modified)
         // 3. staged for addition, but not in CWD(deleted)
         for (Blob blob : addStagedBlobSet) {
             File fileInCWD = join(CWD, blob.getFileName());
-            if (fileInCWD.exists()) {
+            if (fileInCWD.isFile()) {
                 byte[] cwdFileContents = readContents(fileInCWD);
                 if (!Arrays.equals(cwdFileContents, blob.getFileContents())) {
                     modifiedNotStageFiles.add(blob.getFileName() + "(modified)");
                 }
-            } else {
+            } else if (!fileInCWD.exists()){
                 modifiedNotStageFiles.add(blob.getFileName() + "(deleted)");
             }
         }
