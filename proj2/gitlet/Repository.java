@@ -300,13 +300,13 @@ public class Repository {
      * */
     public static void log() {
         Commit curCommit = getCurCommit();
-        List<String> history = curCommit.getParents();
+        List<String> parent = curCommit.getParents();
         curCommit.print();
-        while (!history.isEmpty()) {
-            String parentID = history.get(history.size() - 1);
+        while (!parent.isEmpty()) {
+            String parentID = parent.get(0);
             Commit parentCommit = getCommitByID(parentID);
             parentCommit.print();
-            history = parentCommit.getParents();
+            parent = parentCommit.getParents();
         }
 
     }
