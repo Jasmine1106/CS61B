@@ -189,7 +189,8 @@ public class Commit implements Serializable {
             reverseHistory.add(parentID);
             parents = getCommitByID(parentID).getParents();
         }
-        return reverseHistory.reversed();
+        Collections.reverse(reverseHistory);
+        return  reverseHistory;
     }
 
 }
